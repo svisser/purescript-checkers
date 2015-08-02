@@ -66,6 +66,13 @@ render ctx grid = do
   save ctx
   foldM (renderSquare ctx) unit grid.squares
   restore ctx
+  save ctx
+  setStrokeStyle "black" ctx
+  strokeRect ctx { x: 0.5,
+                   y: 0.5,
+                   w: (toNumber grid.width) * renderSize,
+                   h: (toNumber grid.height) * renderSize }
+  restore ctx
   return unit
 
 main :: forall e. Eff (canvas :: Canvas | e) Unit
