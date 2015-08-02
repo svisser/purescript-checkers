@@ -40,9 +40,10 @@ createGrid width height layers = { width: width, height: height, squares: square
         hasPlayerTwo = conj (y >= height - layers) (disj (conj (even y) (odd x)) (conj (even x) (odd y)))
         piece = if hasPlayerOne
                 then Just { color: colorPlayerOne }
-                else if hasPlayerTwo
-                then Just { color: colorPlayerTwo }
-                else Nothing
+                else
+                  if hasPlayerTwo
+                  then Just { color: colorPlayerTwo }
+                  else Nothing
     return { x: x, y: y, rx: rx, ry: ry, color: color, piece: piece }
 
 renderSquare :: forall e. Context2D -> Unit -> Square -> Eff (canvas :: Canvas | e) Unit
