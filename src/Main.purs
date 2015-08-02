@@ -19,8 +19,8 @@ type Grid = { width :: Int, height :: Int, squares :: Array Square }
 renderSize = 60.0
 colorSquareOne = "#d18b47"
 colorSquareTwo = "#ffce9e"
-colorOne = "red"
-colorTwo = "white"
+colorPlayerOne = "red"
+colorPlayerTwo = "white"
 
 createGrid :: Int -> Int -> Int -> Grid
 createGrid width height layers = { width: width, height: height, squares: squares }
@@ -36,9 +36,9 @@ createGrid width height layers = { width: width, height: height, squares: square
         hasPlayerOne = conj (y < layers) (disj (conj (even y) (odd x)) (conj (even x) (odd y)))
         hasPlayerTwo = conj (y >= height - layers) (disj (conj (even y) (odd x)) (conj (even x) (odd y)))
         piece = if hasPlayerOne
-                then Just { color: colorOne }
+                then Just { color: colorPlayerOne }
                 else if hasPlayerTwo
-                then Just { color: colorTwo }
+                then Just { color: colorPlayerTwo }
                 else Nothing
     return { x: x, y: y, rx: rx, ry: ry, color: color, piece: piece }
 
