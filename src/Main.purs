@@ -13,7 +13,7 @@ import Prelude
 
 type Coordinate = Tuple Int Int
 
-type Player = String
+type Player = Int
 
 type Piece = { color :: String }
 
@@ -21,7 +21,7 @@ type Square = { x :: Int, y :: Int, rx :: Number, ry :: Number, color :: String,
 
 type Grid = { width :: Int, height :: Int, squares :: Array Square }
 
-type State = { grid :: Grid }
+type State = { grid :: Grid, currentPlayer :: Player }
 
 renderSize = 60.0
 colorSquareOne = "#d18b47"
@@ -103,7 +103,10 @@ render ctx st = do
 
 main :: forall s e. (Eff (st :: ST s, canvas :: Canvas | e) Unit)
 main = do
-  st <- newSTRef { grid: (createGrid 8 8 3) }
+  st <- newSTRef {
+    grid: (createGrid 8 8 3),
+    currentPlayer: 1
+  }
   element <- getCanvasElementById "canvas"
   case element of
     Just canvas -> do
