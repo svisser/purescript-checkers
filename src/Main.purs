@@ -1,6 +1,7 @@
 module Main where
 
 import Control.Monad.Eff
+import Control.Monad.ST
 import Data.Array
 import Data.Int (even, odd, toNumber)
 import Data.Maybe
@@ -15,6 +16,8 @@ type Piece = { color :: String }
 type Square = { x :: Int, y :: Int, rx :: Number, ry :: Number, color :: String, piece :: Maybe Piece }
 
 type Grid = { width :: Int, height :: Int, squares :: Array Square }
+
+type State = { grid :: Grid }
 
 renderSize = 60.0
 colorSquareOne = "#d18b47"
@@ -61,26 +64,28 @@ renderSquare ctx _ square = do
       return unit
     _ -> return unit
 
-render :: forall e. Context2D -> Grid -> Eff (canvas :: Canvas | e) Unit
-render ctx grid = do
+render :: forall s e. Context2D -> STRef s State -> Eff (st :: ST s, canvas :: Canvas | e) Unit
+render ctx st = do
+  state <- readSTRef st
   save ctx
-  foldM (renderSquare ctx) unit grid.squares
+  foldM (renderSquare ctx) unit state.grid.squares
   restore ctx
   save ctx
   setStrokeStyle "black" ctx
   strokeRect ctx { x: 0.5,
                    y: 0.5,
-                   w: (toNumber grid.width) * renderSize,
-                   h: (toNumber grid.height) * renderSize }
+                   w: (toNumber state.grid.width) * renderSize,
+                   h: (toNumber state.grid.height) * renderSize }
   restore ctx
   return unit
 
-main :: forall e. Eff (canvas :: Canvas | e) Unit
+main :: forall s e. (Eff (st :: ST s, canvas :: Canvas | e) Unit)
 main = do
+  st <- newSTRef { grid: (createGrid 8 8 3) }
   element <- getCanvasElementById "canvas"
   case element of
     Just canvas -> do
       ctx <- getContext2D canvas
-      render ctx (createGrid 8 8 3)
+      render ctx st
       return unit
     _ -> return unit
