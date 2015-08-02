@@ -9,34 +9,33 @@ import Prelude
 
 type Player = String
 
-type Square = { x :: Int, y :: Int }
+type Square = { x :: Int, y :: Int, rx :: Number, ry :: Number, color :: String }
 
 type Grid = Array Square
 
 renderSize :: Number
-renderSize = 50.0
+renderSize = 60.0
 
 createGrid :: Int -> Int -> Grid
 createGrid width height = do
   x <- 0 .. (width - 1)
   y <- 0 .. (height - 1)
-  return { x: x, y: y }
+  let rx = (toNumber x) * renderSize
+      ry = (toNumber y) * renderSize
+      color = if disj (conj (even x) (odd y)) (conj (even y) (odd x))
+              then "#d18b47"
+              else "#ffce9e"
+  return { x: x, y: y, rx: rx, ry: ry, color: color }
 
-renderRectangle :: Square -> Rectangle
-renderRectangle square = { x: (toNumber square.x) * renderSize
-                         , y: (toNumber square.y) * renderSize
-                         , w: renderSize
-                         , h: renderSize }
-
-renderSquare :: forall e. Context2D -> Unit -> Rectangle -> Eff (canvas :: Canvas | e) Unit
-renderSquare ctx _ rectangle = do
+renderSquare :: forall e. Context2D -> Unit -> Square -> Eff (canvas :: Canvas | e) Unit
+renderSquare ctx _ square = do
   save ctx
-  setFillStyle "#ff0000" ctx
-  fillRect ctx rectangle
+  setFillStyle square.color ctx
+  fillRect ctx { x: square.rx, y: square.ry, w: renderSize, h: renderSize }
   restore ctx
   return unit
 
-render :: forall e. Context2D -> Array Rectangle -> Eff (canvas :: Canvas | e) Unit
+render :: forall e. Context2D -> Grid -> Eff (canvas :: Canvas | e) Unit
 render ctx grid = do
   save ctx
   foldM (renderSquare ctx) unit grid
@@ -49,6 +48,6 @@ main = do
   case element of
     Just canvas -> do
       ctx <- getContext2D canvas
-      render ctx (map renderRectangle (createGrid 8 8))
+      render ctx (createGrid 8 8)
       return unit
     _ -> return unit
