@@ -17,6 +17,8 @@ type Square = { x :: Int, y :: Int, rx :: Number, ry :: Number, color :: String,
 type Grid = Array Square
 
 renderSize = 60.0
+colorSquareOne = "#d18b47"
+colorSquareTwo = "#ffce9e"
 colorOne = "red"
 colorTwo = "white"
 
@@ -27,8 +29,8 @@ createGrid width height layers = do
   let rx = (toNumber x) * renderSize
       ry = (toNumber y) * renderSize
       color = if disj (conj (even x) (odd y)) (conj (even y) (odd x))
-              then "#d18b47"
-              else "#ffce9e"
+              then colorSquareOne
+              else colorSquareTwo
       hasPlayerOne = conj (y < layers) (disj (conj (even y) (odd x)) (conj (even x) (odd y)))
       hasPlayerTwo = conj (y >= height - layers) (disj (conj (even y) (odd x)) (conj (even x) (odd y)))
       piece = if hasPlayerOne
