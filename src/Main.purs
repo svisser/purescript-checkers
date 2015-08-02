@@ -14,7 +14,7 @@ type Piece = { color :: String }
 
 type Square = { x :: Int, y :: Int, rx :: Number, ry :: Number, color :: String, piece :: Maybe Piece }
 
-type Grid = Array Square
+type Grid = { width :: Int, height :: Int, squares :: Array Square }
 
 renderSize = 60.0
 colorSquareOne = "#d18b47"
@@ -23,22 +23,24 @@ colorOne = "red"
 colorTwo = "white"
 
 createGrid :: Int -> Int -> Int -> Grid
-createGrid width height layers = do
-  x <- 0 .. (width - 1)
-  y <- 0 .. (height - 1)
-  let rx = (toNumber x) * renderSize
-      ry = (toNumber y) * renderSize
-      color = if disj (conj (even x) (odd y)) (conj (even y) (odd x))
-              then colorSquareOne
-              else colorSquareTwo
-      hasPlayerOne = conj (y < layers) (disj (conj (even y) (odd x)) (conj (even x) (odd y)))
-      hasPlayerTwo = conj (y >= height - layers) (disj (conj (even y) (odd x)) (conj (even x) (odd y)))
-      piece = if hasPlayerOne
-              then Just { color: colorOne }
-              else if hasPlayerTwo
-              then Just { color: colorTwo }
-              else Nothing
-  return { x: x, y: y, rx: rx, ry: ry, color: color, piece: piece }
+createGrid width height layers = { width: width, height: height, squares: squares }
+  where
+  squares = do
+    x <- 0 .. (width - 1)
+    y <- 0 .. (height - 1)
+    let rx = (toNumber x) * renderSize
+        ry = (toNumber y) * renderSize
+        color = if disj (conj (even x) (odd y)) (conj (even y) (odd x))
+                then colorSquareOne
+                else colorSquareTwo
+        hasPlayerOne = conj (y < layers) (disj (conj (even y) (odd x)) (conj (even x) (odd y)))
+        hasPlayerTwo = conj (y >= height - layers) (disj (conj (even y) (odd x)) (conj (even x) (odd y)))
+        piece = if hasPlayerOne
+                then Just { color: colorOne }
+                else if hasPlayerTwo
+                then Just { color: colorTwo }
+                else Nothing
+    return { x: x, y: y, rx: rx, ry: ry, color: color, piece: piece }
 
 renderSquare :: forall e. Context2D -> Unit -> Square -> Eff (canvas :: Canvas | e) Unit
 renderSquare ctx _ square = do
@@ -62,7 +64,7 @@ renderSquare ctx _ square = do
 render :: forall e. Context2D -> Grid -> Eff (canvas :: Canvas | e) Unit
 render ctx grid = do
   save ctx
-  foldM (renderSquare ctx) unit grid
+  foldM (renderSquare ctx) unit grid.squares
   restore ctx
   return unit
 
