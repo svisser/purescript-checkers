@@ -33,11 +33,11 @@ createGrid width height layers = { width: width, height: height, squares: square
     y <- 0 .. (height - 1)
     let rx = (toNumber x) * renderSize
         ry = (toNumber y) * renderSize
-        color = if disj (conj (even x) (odd y)) (conj (even y) (odd x))
+        color = if ((even x) && (odd y)) || ((even y) && (odd x))
                 then colorSquareOne
                 else colorSquareTwo
-        hasPlayerOne = conj (y < layers) (disj (conj (even y) (odd x)) (conj (even x) (odd y)))
-        hasPlayerTwo = conj (y >= height - layers) (disj (conj (even y) (odd x)) (conj (even x) (odd y)))
+        hasPlayerOne = (y < layers) && (((even y) && (odd x)) || ((even x) && (odd y)))
+        hasPlayerTwo = (y >= height - layers) && (((even y) && (odd x)) || ((even x) && (odd y)))
         piece = if hasPlayerOne
                 then Just { color: colorPlayerOne }
                 else
