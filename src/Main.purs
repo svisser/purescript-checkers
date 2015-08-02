@@ -1,4 +1,4 @@
-module Main where
+module Main (main) where
 
 import Control.Monad.Eff
 import Control.Monad.ST
