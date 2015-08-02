@@ -54,16 +54,10 @@ findPiece :: Coordinate -> Grid -> Maybe Int
 findPiece (Tuple x y) grid = findIndex (\e -> e.x == x && e.y == y) grid.squares
 
 setPiece :: Maybe Piece -> Square -> Square
-setPiece piece square = {
-  x: square.x,
-  y: square.y,
-  rx: square.rx,
-  ry: square.ry,
-  color: square.color,
-  piece: piece }
+setPiece piece square = square { piece = piece }
 
 movePiece :: Coordinate -> Coordinate -> Grid -> Grid
-movePiece from to grid = { width: grid.width, height: grid.height, squares: newSquares }
+movePiece from to grid = grid { squares = newSquares }
     where
       fromIndex = fromJust (findPiece from grid)
       toIndex = fromJust (findPiece to grid)
