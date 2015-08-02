@@ -5,9 +5,13 @@ import Control.Monad.ST
 import Data.Array
 import Data.Int (even, odd, toNumber)
 import Data.Maybe
+import Data.Maybe.Unsafe
+import Data.Tuple
 import Graphics.Canvas
 import Math
 import Prelude
+
+type Coordinate = Tuple Int Int
 
 type Player = String
 
@@ -45,6 +49,27 @@ createGrid width height layers = { width: width, height: height, squares: square
                   then Just { color: colorPlayerTwo }
                   else Nothing
     return { x: x, y: y, rx: rx, ry: ry, color: color, piece: piece }
+
+findPiece :: Coordinate -> Grid -> Maybe Int
+findPiece (Tuple x y) grid = findIndex (\e -> e.x == x && e.y == y) grid.squares
+
+setPiece :: Maybe Piece -> Square -> Square
+setPiece piece square = {
+  x: square.x,
+  y: square.y,
+  rx: square.rx,
+  ry: square.ry,
+  color: square.color,
+  piece: piece }
+
+movePiece :: Coordinate -> Coordinate -> Grid -> Grid
+movePiece from to grid = { width: grid.width, height: grid.height, squares: newSquares }
+    where
+      fromIndex = fromJust (findPiece from grid)
+      toIndex = fromJust (findPiece to grid)
+      originalSquare = fromJust (grid.squares !! fromIndex)
+      afterMove = fromJust (modifyAt toIndex (setPiece originalSquare.piece) grid.squares)
+      newSquares = fromJust (modifyAt fromIndex (setPiece Nothing) afterMove)
 
 renderSquare :: forall e. Context2D -> Unit -> Square -> Eff (canvas :: Canvas | e) Unit
 renderSquare ctx _ square = do
