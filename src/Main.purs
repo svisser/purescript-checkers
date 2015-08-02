@@ -47,36 +47,32 @@ createGrid width height layers = { width: width, height: height, squares: square
 
 renderSquare :: forall e. Context2D -> Unit -> Square -> Eff (canvas :: Canvas | e) Unit
 renderSquare ctx _ square = do
-  save ctx
-  setFillStyle square.color ctx
-  fillRect ctx { x: square.rx, y: square.ry, w: renderSize, h: renderSize }
-  restore ctx
+  withContext ctx $ do
+    setFillStyle square.color ctx
+    fillRect ctx { x: square.rx, y: square.ry, w: renderSize, h: renderSize }
   case square.piece of
     Just piece -> do
-      save ctx
-      setFillStyle piece.color ctx
-      fillPath ctx $ arc ctx { x: square.rx + 0.5 * renderSize,
-                               y: square.ry + 0.5 * renderSize,
-                               r: (renderSize / 2.0) * 0.8,
-                               start: 0.0,
-                               end: 2.0 * pi }
-      restore ctx
-      return unit
+      withContext ctx $ do
+        setFillStyle piece.color ctx
+        fillPath ctx $ arc ctx { x: square.rx + 0.5 * renderSize,
+                                 y: square.ry + 0.5 * renderSize,
+                                 r: (renderSize / 2.0) * 0.8,
+                                 start: 0.0,
+                                 end: 2.0 * pi }
+        return unit
     _ -> return unit
 
 render :: forall s e. Context2D -> STRef s State -> Eff (st :: ST s, canvas :: Canvas | e) Unit
 render ctx st = do
   state <- readSTRef st
-  save ctx
-  foldM (renderSquare ctx) unit state.grid.squares
-  restore ctx
-  save ctx
-  setStrokeStyle "black" ctx
-  strokeRect ctx { x: 0.5,
-                   y: 0.5,
-                   w: (toNumber state.grid.width) * renderSize,
-                   h: (toNumber state.grid.height) * renderSize }
-  restore ctx
+  withContext ctx $ do
+    foldM (renderSquare ctx) unit state.grid.squares
+  withContext ctx $ do
+    setStrokeStyle "black" ctx
+    strokeRect ctx { x: 0.5,
+                     y: 0.5,
+                     w: (toNumber state.grid.width) * renderSize,
+                     h: (toNumber state.grid.height) * renderSize }
   return unit
 
 main :: forall s e. (Eff (st :: ST s, canvas :: Canvas | e) Unit)
