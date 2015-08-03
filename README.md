@@ -6,8 +6,7 @@ Checkers implemented in PureScript.
 
 Install npm:
 
-*  `sudo port install nodejs`, or
-* `brew install node`
+* `sudo port install nodejs` or `sudo brew install node`
 
 Install PureScript:
 
