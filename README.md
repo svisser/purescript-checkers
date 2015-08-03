@@ -2,7 +2,7 @@
 
 Checkers implemented in PureScript.
 
-# Installation (Mac OS X)
+# Installation (Mac OS X)
 
 Install npm:
 
