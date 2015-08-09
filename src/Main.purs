@@ -31,17 +31,18 @@ type Grid = { width :: Int, height :: Int, squares :: Array Square }
 
 type State = { grid :: Grid, currentPlayer :: Player }
 
-defaultWidth   = 8
-defaultHeight  = 8
-layerCount     = 3
-renderSize     = 60.0
-renderWidth    = (toNumber defaultWidth) * renderSize
-renderHeight   = (toNumber defaultHeight) * renderSize
+defaultWidth    = 8
+defaultHeight   = 8
+layerCount      = 3
+renderSize      = 60.0
+renderWidth     = (toNumber defaultWidth) * renderSize
+renderHeight    = (toNumber defaultHeight) * renderSize
+renderDimension = { width: renderWidth, height: renderHeight }
 
-colorSquareOne = "#d18b47"
-colorSquareTwo = "#ffce9e"
-colorPlayerOne = "red"
-colorPlayerTwo = "white"
+colorSquareOne  = "#d18b47"
+colorSquareTwo  = "#ffce9e"
+colorPlayerOne  = "red"
+colorPlayerTwo  = "white"
 
 createGrid :: Int -> Int -> Int -> Grid
 createGrid width height layers = { width: width, height: height, squares: squares }
@@ -133,7 +134,7 @@ renderPage st event = do
   element <- getCanvasElementById "canvas"
   case element of
     Just canvas -> do
-      setCanvasDimensions { width: renderWidth, height: renderHeight } canvas
+      setCanvasDimensions renderDimension canvas
       ctx <- getContext2D canvas
       render ctx st event
       return unit
