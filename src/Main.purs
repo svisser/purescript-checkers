@@ -68,8 +68,8 @@ createGrid width height layers = { width: width, height: height, squares: square
 createState :: Int -> Int -> Int -> State
 createState width height layers = { grid: (createGrid width height layers), currentPlayer: 1 }
 
-findPiece :: Coordinate -> Grid -> Maybe Int
-findPiece (Tuple x y) grid = findIndex (\e -> e.x == x && e.y == y) grid.squares
+findPiece :: Grid -> Coordinate -> Maybe Int
+findPiece grid (Tuple x y) = findIndex (\e -> e.x == x && e.y == y) grid.squares
 
 setPiece :: Maybe Piece -> Square -> Square
 setPiece piece square = square { piece = piece }
@@ -82,8 +82,8 @@ isOnSquare square x y =
 movePiece :: Coordinate -> Coordinate -> Grid -> Grid
 movePiece from to grid = grid { squares = newSquares }
     where
-      fromIndex = fromJust (findPiece from grid)
-      toIndex = fromJust (findPiece to grid)
+      fromIndex = fromJust (findPiece grid from)
+      toIndex = fromJust (findPiece grid to)
       originalSquare = fromJust (grid.squares !! fromIndex)
       afterMove = fromJust (modifyAt toIndex (setPiece originalSquare.piece) grid.squares)
       newSquares = fromJust (modifyAt fromIndex (setPiece Nothing) afterMove)
