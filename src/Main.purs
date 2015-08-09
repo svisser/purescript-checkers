@@ -1,4 +1,4 @@
-module Main (main) where
+module Checkers.Main where
 
 import Control.Monad.Eff
 import Control.Monad.Eff.Console
@@ -19,34 +19,7 @@ import Graphics.Canvas
 import Math (pi)
 import Prelude
 
-type Coordinate = Tuple Int Int
-
-type Player = Int
-
-type Piece = {
-    color :: String,
-    king  :: Boolean
-}
-
-type Square = {
-    x     :: Int,
-    y     :: Int,
-    rx    :: Number,
-    ry    :: Number,
-    color :: String,
-    piece :: Maybe Piece
-}
-
-type Grid = {
-    width   :: Int,
-    height  :: Int,
-    squares :: Array Square
-}
-
-type State = {
-    grid          :: Grid,
-    currentPlayer :: Player
-}
+import Checkers.Types
 
 defaultWidth    = 8
 defaultHeight   = 8
