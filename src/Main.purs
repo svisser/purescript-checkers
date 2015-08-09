@@ -3,23 +3,19 @@ module Main (main) where
 import Control.Monad.Eff
 import Control.Monad.ST
 import Data.Array
+import Data.DOM.Simple.Document
+import Data.DOM.Simple.Element
+import Data.DOM.Simple.Events
+import Data.DOM.Simple.Types
+import Data.DOM.Simple.Window
 import Data.Int (even, odd, toNumber)
 import Data.Maybe
 import Data.Maybe.Unsafe
 import Data.Tuple
+import DOM
 import Graphics.Canvas
 import Math
 import Prelude
-
-import qualified Thermite as T
-import qualified Thermite.Html as T
-import qualified Thermite.Html.Elements as T
-import qualified Thermite.Html.Attributes as A
-import qualified Thermite.Events as T
-import qualified Thermite.Action as T
-import qualified Thermite.Types as T
-
-data Action = MoveMouseOverCanvas T.MouseEvent | DoNothing
 
 type Coordinate = Tuple Int Int
 
@@ -95,8 +91,8 @@ renderSquare ctx _ square = do
         return unit
     _ -> return unit
 
-render2 :: forall s e. Context2D -> STRef s State -> Eff (st :: ST s, canvas :: Canvas | e) Unit
-render2 ctx st = do
+render :: forall s e. Context2D -> STRef s State -> Eff (st :: ST s, canvas :: Canvas | e) Unit
+render ctx st = do
   state <- readSTRef st
   withContext ctx $ do
     foldM (renderSquare ctx) unit state.grid.squares
@@ -108,40 +104,29 @@ render2 ctx st = do
                      h: (toNumber state.grid.height) * renderSize }
   return unit
 
-handleMouseOver :: T.MouseEvent -> Action
-handleMouseOver e = MoveMouseOverCanvas e
+onMouseOverListener :: forall s e. STRef s State -> DOMEvent -> Eff (st :: ST s, canvas :: Canvas, dom :: DOM | e) Unit
+onMouseOverListener st e = do
+  renderPage st
+  return unit
 
-render :: T.Render _ State _ Action
-render ctx state _ _ = T.div (A.className "container") [ title, checkersCanvas ]
-  where
-    title :: T.Html _
-    title = T.h1' [ T.text "Checkers in PureScript using React.js" ]
-
-    checkersCanvas :: T.Html _
-    checkersCanvas = T.canvas (A.width "800"
-                               <> A.height "800"
-                               <> T.onMouseOver ctx handleMouseOver) []
-
-performAction :: T.PerformAction _ State _ Action
-performAction _ action = T.modifyState (updateState action)
-  where
-    updateState :: Action -> State -> State
-    updateState (MoveMouseOverCanvas event) = id
-    updateState DoNothing = id
-
-spec :: T.Spec _ State _ Action
-spec = T.simpleSpec (createState 8 8 3) performAction render
-
-main = do
-  let component = T.createClass spec
-  T.render component {}
-
-{-  st <- newSTRef (createState 8 8 3)
+renderPage st = do
   element <- getCanvasElementById "canvas"
   case element of
     Just canvas -> do
+      setCanvasDimensions { "width": 800.0, "height": 800.0 } canvas
       ctx <- getContext2D canvas
       render ctx st
       return unit
     _ -> return unit
--}
+  return unit
+
+main = do
+  st <- newSTRef (createState 8 8 3)
+  doc <- document globalWindow
+  mcanvas <- getElementById "canvas" doc
+  case mcanvas of
+    Just canvas -> do
+      addMouseEventListener MouseOverEvent (onMouseOverListener st) canvas
+      renderPage st
+      return unit
+    _ -> return unit

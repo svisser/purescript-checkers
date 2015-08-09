@@ -16,7 +16,6 @@
     "purescript-canvas": "0.3.x",
     "purescript-integers": "0.2.x",
     "purescript-maybe": "0.3.x",
-    "purescript-thermite": "0.8.x",
-    "es5-shim": "~4.0.5"
+    "purescript-simple-dom": "0.1.x"
   }
 }
