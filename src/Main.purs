@@ -1,6 +1,7 @@
 module Main (main) where
 
 import Control.Monad.Eff
+import Control.Monad.Eff.Console
 import Control.Monad.ST
 import Data.Array
 import Data.DOM.Simple.Document
@@ -74,8 +75,8 @@ movePiece from to grid = grid { squares = newSquares }
       afterMove = fromJust (modifyAt toIndex (setPiece originalSquare.piece) grid.squares)
       newSquares = fromJust (modifyAt fromIndex (setPiece Nothing) afterMove)
 
-renderSquare :: forall e. Context2D -> Unit -> Square -> Eff (canvas :: Canvas | e) Unit
-renderSquare ctx _ square = do
+renderSquare :: forall e. Context2D -> Maybe DOMEvent -> Unit -> Square -> Eff (canvas :: Canvas, console :: CONSOLE, dom :: DOM | e) Unit
+renderSquare ctx event _ square = do
   withContext ctx $ do
     setFillStyle square.color ctx
     fillRect ctx { x: square.rx, y: square.ry, w: renderSize, h: renderSize }
@@ -88,34 +89,40 @@ renderSquare ctx _ square = do
                                  r: (renderSize / 2.0) * 0.8,
                                  start: 0.0,
                                  end: 2.0 * pi }
+        case event of
+          Nothing -> return unit
+          Just e -> do
+            screen_x <- screenX e
+            screen_y <- screenY e
+            let square_x = (toNumber screen_x) / renderSize
+                square_y = (toNumber screen_y) / renderSize
+            return unit
         return unit
     _ -> return unit
 
-render :: forall s e. Context2D -> STRef s State -> Eff (st :: ST s, canvas :: Canvas | e) Unit
-render ctx st = do
+render :: forall s e. Context2D -> STRef s State -> Maybe DOMEvent -> Eff (st :: ST s, canvas :: Canvas, console :: CONSOLE, dom :: DOM | e) Unit
+render ctx st event = do
   state <- readSTRef st
   withContext ctx $ do
-    foldM (renderSquare ctx) unit state.grid.squares
+    foldM (renderSquare ctx event) unit state.grid.squares
   withContext ctx $ do
     setStrokeStyle "black" ctx
     strokeRect ctx { x: 0.5,
                      y: 0.5,
-                     w: (toNumber state.grid.width) * renderSize,
-                     h: (toNumber state.grid.height) * renderSize }
+                     w: (toNumber state.grid.width) * renderSize - 0.5,
+                     h: (toNumber state.grid.height) * renderSize - 0.5 }
   return unit
 
-onMouseOverListener :: forall s e. STRef s State -> DOMEvent -> Eff (st :: ST s, canvas :: Canvas, dom :: DOM | e) Unit
-onMouseOverListener st e = do
-  renderPage st
-  return unit
+onMouseMoveListener :: forall s e. STRef s State -> DOMEvent -> Eff (st :: ST s, canvas :: Canvas, console :: CONSOLE, dom :: DOM | e) Unit
+onMouseMoveListener st e = renderPage st (Just e)
 
-renderPage st = do
+renderPage st event = do
   element <- getCanvasElementById "canvas"
   case element of
     Just canvas -> do
-      setCanvasDimensions { "width": 800.0, "height": 800.0 } canvas
+      setCanvasDimensions { "width": 480.0, "height": 480.0 } canvas
       ctx <- getContext2D canvas
-      render ctx st
+      render ctx st event
       return unit
     _ -> return unit
   return unit
@@ -126,7 +133,7 @@ main = do
   mcanvas <- getElementById "canvas" doc
   case mcanvas of
     Just canvas -> do
-      addMouseEventListener MouseOverEvent (onMouseOverListener st) canvas
-      renderPage st
+      addMouseEventListener MouseMoveEvent (onMouseMoveListener st) canvas
+      renderPage st Nothing
       return unit
     _ -> return unit
