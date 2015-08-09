@@ -31,7 +31,13 @@ type Grid = { width :: Int, height :: Int, squares :: Array Square }
 
 type State = { grid :: Grid, currentPlayer :: Player }
 
-renderSize = 60.0
+defaultWidth   = 8
+defaultHeight  = 8
+layerCount     = 3
+renderSize     = 60.0
+renderWidth    = (toNumber defaultWidth) * renderSize
+renderHeight   = (toNumber defaultHeight) * renderSize
+
 colorSquareOne = "#d18b47"
 colorSquareTwo = "#ffce9e"
 colorPlayerOne = "red"
@@ -127,7 +133,7 @@ renderPage st event = do
   element <- getCanvasElementById "canvas"
   case element of
     Just canvas -> do
-      setCanvasDimensions { "width": 480.0, "height": 480.0 } canvas
+      setCanvasDimensions { width: renderWidth, height: renderHeight } canvas
       ctx <- getContext2D canvas
       render ctx st event
       return unit
@@ -135,7 +141,7 @@ renderPage st event = do
   return unit
 
 main = do
-  st <- newSTRef (createState 8 8 3)
+  st <- newSTRef (createState defaultWidth defaultHeight layerCount)
   doc <- document globalWindow
   mcanvas <- getElementById "canvas" doc
   case mcanvas of
