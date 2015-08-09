@@ -23,13 +23,30 @@ type Coordinate = Tuple Int Int
 
 type Player = Int
 
-type Piece = { color :: String, king :: Boolean }
+type Piece = {
+    color :: String,
+    king  :: Boolean
+}
 
-type Square = { x :: Int, y :: Int, rx :: Number, ry :: Number, color :: String, piece :: Maybe Piece }
+type Square = {
+    x     :: Int,
+    y     :: Int,
+    rx    :: Number,
+    ry    :: Number,
+    color :: String,
+    piece :: Maybe Piece
+}
 
-type Grid = { width :: Int, height :: Int, squares :: Array Square }
+type Grid = {
+    width   :: Int,
+    height  :: Int,
+    squares :: Array Square
+}
 
-type State = { grid :: Grid, currentPlayer :: Player }
+type State = {
+    grid          :: Grid,
+    currentPlayer :: Player
+}
 
 defaultWidth    = 8
 defaultHeight   = 8
