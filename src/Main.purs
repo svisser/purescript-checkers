@@ -23,7 +23,7 @@ type Coordinate = Tuple Int Int
 
 type Player = Int
 
-type Piece = { color :: String }
+type Piece = { color :: String, king :: Boolean }
 
 type Square = { x :: Int, y :: Int, rx :: Number, ry :: Number, color :: String, piece :: Maybe Piece }
 
@@ -58,10 +58,10 @@ createGrid width height layers = { width: width, height: height, squares: square
         hasPlayerOne = (y < layers) && (((even y) && (odd x)) || ((even x) && (odd y)))
         hasPlayerTwo = (y >= height - layers) && (((even y) && (odd x)) || ((even x) && (odd y)))
         piece = if hasPlayerOne
-                then Just { color: colorPlayerOne }
+                then Just { color: colorPlayerOne, king: false }
                 else
                   if hasPlayerTwo
-                  then Just { color: colorPlayerTwo }
+                  then Just { color: colorPlayerTwo, king: false }
                   else Nothing
     return { x: x, y: y, rx: rx, ry: ry, color: color, piece: piece }
 
