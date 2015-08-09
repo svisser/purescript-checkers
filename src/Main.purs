@@ -74,6 +74,11 @@ findPiece (Tuple x y) grid = findIndex (\e -> e.x == x && e.y == y) grid.squares
 setPiece :: Maybe Piece -> Square -> Square
 setPiece piece square = square { piece = piece }
 
+isOnSquare :: Square -> Number -> Number -> Boolean
+isOnSquare square x y =
+  square.rx < x && x < square.rx + renderSize &&
+  square.ry < y && y < square.ry + renderSize
+
 movePiece :: Coordinate -> Coordinate -> Grid -> Grid
 movePiece from to grid = grid { squares = newSquares }
     where
@@ -103,9 +108,7 @@ renderSquare ctx event _ square = do
           Just e -> do
             ux <- unsafeEventNumberProp "clientX" e
             uy <- unsafeEventNumberProp "clientY" e
-            let nx = toNumber ux
-                ny = toNumber uy
-            case (square.rx < nx && nx < square.rx + renderSize && square.ry < ny && ny < square.ry + renderSize) of
+            case isOnSquare square (toNumber ux) (toNumber uy) of
               true -> do
                 strokePath ctx $ arc ctx arcPiece
                 return unit
