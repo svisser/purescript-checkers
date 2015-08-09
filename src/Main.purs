@@ -14,7 +14,7 @@ import Data.Maybe.Unsafe
 import Data.Tuple
 import DOM
 import Graphics.Canvas
-import Math
+import Math (pi)
 import Prelude
 
 type Coordinate = Tuple Int Int
