@@ -74,6 +74,12 @@ findPiece grid (Tuple x y) = findIndex (\e -> e.x == x && e.y == y) grid.squares
 setPiece :: Maybe Piece -> Square -> Square
 setPiece piece square = square { piece = piece }
 
+getDiagonalSquares :: Coordinate -> Array Coordinate
+getDiagonalSquares (Tuple x y) = do
+  i <- -1 : (singleton 1)
+  j <- -1 : (singleton 1)
+  return (Tuple (x + i) (y + j))
+
 isOnSquare :: Square -> Number -> Number -> Boolean
 isOnSquare square x y =
   square.rx < x && x < square.rx + renderSize &&
