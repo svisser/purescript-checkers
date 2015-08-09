@@ -8,6 +8,7 @@ import Data.DOM.Simple.Document
 import Data.DOM.Simple.Element
 import Data.DOM.Simple.Events
 import Data.DOM.Simple.Types
+import Data.DOM.Simple.Unsafe.Events (unsafeEventNumberProp)
 import Data.DOM.Simple.Window
 import Data.Int (even, odd, toNumber)
 import Data.Maybe
@@ -84,18 +85,24 @@ renderSquare ctx event _ square = do
     Just piece -> do
       withContext ctx $ do
         setFillStyle piece.color ctx
-        fillPath ctx $ arc ctx { x: square.rx + 0.5 * renderSize,
-                                 y: square.ry + 0.5 * renderSize,
-                                 r: (renderSize / 2.0) * 0.8,
-                                 start: 0.0,
-                                 end: 2.0 * pi }
+        let arcPiece = { x: square.rx + 0.5 * renderSize,
+                         y: square.ry + 0.5 * renderSize,
+                         r: (renderSize / 2.0) * 0.8,
+                         start: 0.0,
+                         end: 2.0 * pi }
+        fillPath ctx $ arc ctx arcPiece
         case event of
           Nothing -> return unit
           Just e -> do
-            screen_x <- screenX e
-            screen_y <- screenY e
-            let square_x = (toNumber screen_x) / renderSize
-                square_y = (toNumber screen_y) / renderSize
+            ux <- unsafeEventNumberProp "clientX" e
+            uy <- unsafeEventNumberProp "clientY" e
+            let nx = toNumber ux
+                ny = toNumber uy
+            case (square.rx < nx && nx < square.rx + renderSize && square.ry < ny && ny < square.ry + renderSize) of
+              true -> do
+                strokePath ctx $ arc ctx arcPiece
+                return unit
+              false -> return unit
             return unit
         return unit
     _ -> return unit
