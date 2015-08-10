@@ -126,9 +126,6 @@ render ctx st event = do
                      h: (toNumber state.grid.height) * renderSize - 0.5 }
   return unit
 
-onMouseMoveListener :: forall s e. STRef s State -> DOMEvent -> Eff (st :: ST s, canvas :: Canvas, console :: CONSOLE, dom :: DOM | e) Unit
-onMouseMoveListener st e = renderPage st (Just e)
-
 renderPage st event = do
   element <- getCanvasElementById "canvas"
   case element of
@@ -146,7 +143,7 @@ main = do
   mcanvas <- getElementById "canvas" doc
   case mcanvas of
     Just canvas -> do
-      addMouseEventListener MouseMoveEvent (onMouseMoveListener st) canvas
+      addMouseEventListener MouseMoveEvent (\e -> renderPage st (Just e)) canvas
       renderPage st Nothing
       return unit
     _ -> return unit
