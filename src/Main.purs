@@ -37,23 +37,23 @@ colorPlayerTwo  = "white"
 createGrid :: Int -> Int -> Int -> Grid
 createGrid width height layers = { width: width, height: height, squares: squares }
   where
-  squares = do
-    x <- 0 .. (width - 1)
-    y <- 0 .. (height - 1)
-    let rx = (toNumber x) * renderSize
-        ry = (toNumber y) * renderSize
-        color = if ((even x) && (odd y)) || ((even y) && (odd x))
-                then colorSquareOne
-                else colorSquareTwo
-        hasPlayerOne = (y < layers) && (((even y) && (odd x)) || ((even x) && (odd y)))
-        hasPlayerTwo = (y >= height - layers) && (((even y) && (odd x)) || ((even x) && (odd y)))
-        piece = if hasPlayerOne
-                then Just { color: colorPlayerOne, king: false }
-                else
-                  if hasPlayerTwo
-                  then Just { color: colorPlayerTwo, king: false }
-                  else Nothing
-    return { x: x, y: y, rx: rx, ry: ry, color: color, piece: piece }
+    squares = do
+      x <- 0 .. (width - 1)
+      y <- 0 .. (height - 1)
+      let rx = (toNumber x) * renderSize
+          ry = (toNumber y) * renderSize
+          color = if ((even x) && (odd y)) || ((even y) && (odd x))
+                  then colorSquareOne
+                  else colorSquareTwo
+          hasPlayerOne = (y < layers) && (((even y) && (odd x)) || ((even x) && (odd y)))
+          hasPlayerTwo = (y >= height - layers) && (((even y) && (odd x)) || ((even x) && (odd y)))
+          piece = if hasPlayerOne
+                  then Just { color: colorPlayerOne, king: false }
+                  else
+                    if hasPlayerTwo
+                    then Just { color: colorPlayerTwo, king: false }
+                    else Nothing
+      return { x: x, y: y, rx: rx, ry: ry, color: color, piece: piece }
 
 createState :: Int -> Int -> Int -> State
 createState width height layers = { grid: (createGrid width height layers), currentPlayer: 1 }
