@@ -6,6 +6,8 @@ import Prelude
 defaultWidth    = 8
 defaultHeight   = 8
 layerCount      = 3
+
+highlightWidth  = 2.0
 renderSize      = 60.0
 renderWidth     = (toNumber defaultWidth) * renderSize
 renderHeight    = (toNumber defaultHeight) * renderSize

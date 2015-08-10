@@ -94,6 +94,7 @@ renderSquare offset ctx event _ square = do
             uy <- unsafeEventNumberProp "clientY" e
             case isOnSquare offset square (toNumber ux) (toNumber uy) of
               true -> do
+                setLineWidth highlightWidth ctx
                 strokePath ctx $ arc ctx arcPiece
                 return unit
               false -> return unit
