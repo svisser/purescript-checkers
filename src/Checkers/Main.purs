@@ -19,20 +19,8 @@ import Graphics.Canvas
 import Math (pi)
 import Prelude
 
+import Checkers.Constants
 import Checkers.Types
-
-defaultWidth    = 8
-defaultHeight   = 8
-layerCount      = 3
-renderSize      = 60.0
-renderWidth     = (toNumber defaultWidth) * renderSize
-renderHeight    = (toNumber defaultHeight) * renderSize
-renderDimension = { width: renderWidth, height: renderHeight }
-
-colorSquareOne  = "#d18b47"
-colorSquareTwo  = "#ffce9e"
-colorPlayerOne  = "red"
-colorPlayerTwo  = "white"
 
 createGrid :: Int -> Int -> Int -> Grid
 createGrid width height layers = { width: width, height: height, squares: squares }
