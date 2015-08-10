@@ -70,10 +70,10 @@ getDiagonalSquares (Tuple x y) = do
   j <- -1 : (singleton 1)
   return (Tuple (x + i) (y + j))
 
-isOnSquare :: Square -> Number -> Number -> Boolean
-isOnSquare square x y =
-  square.rx < x && x < square.rx + renderSize &&
-  square.ry < y && y < square.ry + renderSize
+isOnSquare :: Tuple Number Number -> Square -> Number -> Number -> Boolean
+isOnSquare (Tuple ox oy) square x y =
+  (square.rx + ox) < x && x < (square.rx + ox) + renderSize &&
+  (square.ry + oy) < y && y < (square.ry + oy) + renderSize
 
 movePiece :: Coordinate -> Coordinate -> Grid -> Grid
 movePiece from to grid = grid { squares = newSquares }
@@ -84,8 +84,8 @@ movePiece from to grid = grid { squares = newSquares }
       afterMove = fromJust (modifyAt toIndex (setPiece originalSquare.piece) grid.squares)
       newSquares = fromJust (modifyAt fromIndex (setPiece Nothing) afterMove)
 
-renderSquare :: forall e. Context2D -> Maybe DOMEvent -> Unit -> Square -> Eff (canvas :: Canvas, console :: CONSOLE, dom :: DOM | e) Unit
-renderSquare ctx event _ square = do
+renderSquare :: forall e. Tuple Number Number -> Context2D -> Maybe DOMEvent -> Unit -> Square -> Eff (canvas :: Canvas, console :: CONSOLE, dom :: DOM | e) Unit
+renderSquare offset ctx event _ square = do
   withContext ctx $ do
     setFillStyle square.color ctx
     fillRect ctx { x: square.rx, y: square.ry, w: renderSize, h: renderSize }
@@ -104,7 +104,7 @@ renderSquare ctx event _ square = do
           Just e -> do
             ux <- unsafeEventNumberProp "clientX" e
             uy <- unsafeEventNumberProp "clientY" e
-            case isOnSquare square (toNumber ux) (toNumber uy) of
+            case isOnSquare offset square (toNumber ux) (toNumber uy) of
               true -> do
                 strokePath ctx $ arc ctx arcPiece
                 return unit
@@ -113,11 +113,11 @@ renderSquare ctx event _ square = do
         return unit
     _ -> return unit
 
-render :: forall s e. Context2D -> STRef s State -> Maybe DOMEvent -> Eff (st :: ST s, canvas :: Canvas, console :: CONSOLE, dom :: DOM | e) Unit
-render ctx st event = do
+render :: forall s e. Tuple Number Number -> Context2D -> STRef s State -> Maybe DOMEvent -> Eff (st :: ST s, canvas :: Canvas, console :: CONSOLE, dom :: DOM | e) Unit
+render offset ctx st event = do
   state <- readSTRef st
   withContext ctx $ do
-    foldM (renderSquare ctx event) unit state.grid.squares
+    foldM (renderSquare offset ctx event) unit state.grid.squares
   withContext ctx $ do
     setStrokeStyle "black" ctx
     strokeRect ctx { x: 0.5,
@@ -126,13 +126,13 @@ render ctx st event = do
                      h: (toNumber state.grid.height) * renderSize - 0.5 }
   return unit
 
-renderPage st event = do
+renderPage offset st event = do
   element <- getCanvasElementById "canvas"
   case element of
     Just canvas -> do
       setCanvasDimensions renderDimension canvas
       ctx <- getContext2D canvas
-      render ctx st event
+      render offset ctx st event
       return unit
     _ -> return unit
   return unit
@@ -143,7 +143,10 @@ main = do
   mcanvas <- getElementById "canvas" doc
   case mcanvas of
     Just canvas -> do
-      addMouseEventListener MouseMoveEvent (\e -> renderPage st (Just e)) canvas
-      renderPage st Nothing
+      x <- offsetLeft canvas
+      y <- offsetTop canvas
+      let offset = (Tuple (toNumber x) (toNumber y))
+      addMouseEventListener MouseMoveEvent (\e -> renderPage offset st (Just e)) canvas
+      renderPage offset st Nothing
       return unit
     _ -> return unit
