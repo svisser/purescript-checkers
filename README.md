@@ -22,7 +22,7 @@ Install dependencies:
 
 Compile PureScript to JavaScript:
 
-* `pulp browserify > html/checkers.js`
+* `pulp browserify -m Checkers.Main > html/checkers.js`
 
 Open page in browser:
 
