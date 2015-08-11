@@ -37,12 +37,11 @@ createGrid (Tuple ox oy) width height layers = { width: width, height: height, s
       y <- 0 .. (height - 1)
       let rx = (toNumber x) * renderSize
           ry = (toNumber y) * renderSize
-          c1 = (even x) && (odd y)
-          c2 = (even y) && (odd x)
-          color = if c1 || c2 then colorSquareOne else colorSquareTwo
-          piece = if (y < layers) && (c1 || c2)
+          isPieceSquare = ((even x) && (odd y)) || ((even y) && (odd x))
+          color = if isPieceSquare then colorSquareOne else colorSquareTwo
+          piece = if isPieceSquare && (y < layers)
                   then Just (createPiece playerOne)
-                  else if (y >= height - layers) && (c1 || c2)
+                  else if isPieceSquare && (y >= height - layers)
                        then Just (createPiece playerTwo)
                        else Nothing
       return { ox: ox, oy: oy, x: x, y: y, rx: rx, ry: ry, color: color, piece: piece }
