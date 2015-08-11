@@ -50,7 +50,9 @@ createGrid (Tuple ox oy) width height layers = { width: width, height: height, s
       return { ox: ox, oy: oy, x: x, y: y, rx: rx, ry: ry, color: color, piece: piece }
 
 createState :: Tuple Number Number -> Int -> Int -> Int -> State
-createState offset width height layers = { grid: (createGrid offset width height layers), currentPlayer: 1 }
+createState offset width height layers =
+  { grid: (createGrid offset width height layers),
+    currentPlayer: playerOne }
 
 findPiece :: Grid -> Coordinate -> Maybe Int
 findPiece grid (Tuple x y) = findIndex (\e -> e.x == x && e.y == y) grid.squares
