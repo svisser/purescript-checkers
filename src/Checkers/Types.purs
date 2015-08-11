@@ -8,8 +8,9 @@ type Coordinate = Tuple Int Int
 type Player = Int
 
 type Piece = {
-    color :: String,
-    king  :: Boolean
+    player :: Player,
+    color  :: String,
+    king   :: Boolean
 }
 
 type Square = {

@@ -7,6 +7,9 @@ defaultWidth    = 8
 defaultHeight   = 8
 layerCount      = 3
 
+playerOne       = 1
+playerTwo       = 2
+
 highlightWidth  = 2.0
 renderSize      = 60.0
 renderWidth     = (toNumber defaultWidth) * renderSize

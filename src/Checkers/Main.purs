@@ -22,6 +22,13 @@ import Prelude
 import Checkers.Constants
 import Checkers.Types
 
+createPiece :: Player -> Piece
+createPiece player =
+  let color = if player == playerOne
+              then colorPlayerOne
+              else colorPlayerTwo
+  in { player: player, color: color, king: false }
+
 createGrid :: Tuple Number Number -> Int -> Int -> Int -> Grid
 createGrid (Tuple ox oy) width height layers = { width: width, height: height, squares: squares }
   where
@@ -36,11 +43,10 @@ createGrid (Tuple ox oy) width height layers = { width: width, height: height, s
           hasPlayerOne = (y < layers) && (((even y) && (odd x)) || ((even x) && (odd y)))
           hasPlayerTwo = (y >= height - layers) && (((even y) && (odd x)) || ((even x) && (odd y)))
           piece = if hasPlayerOne
-                  then Just { color: colorPlayerOne, king: false }
-                  else
-                    if hasPlayerTwo
-                    then Just { color: colorPlayerTwo, king: false }
-                    else Nothing
+                  then Just (createPiece playerOne)
+                  else if hasPlayerTwo
+                       then Just (createPiece playerTwo)
+                       else Nothing
       return { ox: ox, oy: oy, x: x, y: y, rx: rx, ry: ry, color: color, piece: piece }
 
 createState :: Tuple Number Number -> Int -> Int -> Int -> State
