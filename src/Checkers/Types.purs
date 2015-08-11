@@ -13,12 +13,14 @@ type Piece = {
 }
 
 type Square = {
-    x     :: Int,
-    y     :: Int,
-    rx    :: Number,
-    ry    :: Number,
-    color :: String,
-    piece :: Maybe Piece
+    ox      :: Number,
+    oy      :: Number,
+    x       :: Int,
+    y       :: Int,
+    rx      :: Number,
+    ry      :: Number,
+    color   :: String,
+    piece   :: Maybe Piece
 }
 
 type Grid = {

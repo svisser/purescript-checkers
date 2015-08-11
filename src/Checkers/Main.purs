@@ -22,8 +22,8 @@ import Prelude
 import Checkers.Constants
 import Checkers.Types
 
-createGrid :: Int -> Int -> Int -> Grid
-createGrid width height layers = { width: width, height: height, squares: squares }
+createGrid :: Tuple Number Number -> Int -> Int -> Int -> Grid
+createGrid (Tuple ox oy) width height layers = { width: width, height: height, squares: squares }
   where
     squares = do
       x <- 0 .. (width - 1)
@@ -41,10 +41,10 @@ createGrid width height layers = { width: width, height: height, squares: square
                     if hasPlayerTwo
                     then Just { color: colorPlayerTwo, king: false }
                     else Nothing
-      return { x: x, y: y, rx: rx, ry: ry, color: color, piece: piece }
+      return { ox: ox, oy: oy, x: x, y: y, rx: rx, ry: ry, color: color, piece: piece }
 
-createState :: Int -> Int -> Int -> State
-createState width height layers = { grid: (createGrid width height layers), currentPlayer: 1 }
+createState :: Tuple Number Number -> Int -> Int -> Int -> State
+createState offset width height layers = { grid: (createGrid offset width height layers), currentPlayer: 1 }
 
 findPiece :: Grid -> Coordinate -> Maybe Int
 findPiece grid (Tuple x y) = findIndex (\e -> e.x == x && e.y == y) grid.squares
@@ -58,10 +58,11 @@ getDiagonalSquares (Tuple x y) = do
   j <- -1 : (singleton 1)
   return (Tuple (x + i) (y + j))
 
-isOnSquare :: Tuple Number Number -> Square -> Number -> Number -> Boolean
-isOnSquare (Tuple ox oy) square x y =
-  (square.rx + ox) < x && x < (square.rx + ox) + renderSize &&
-  (square.ry + oy) < y && y < (square.ry + oy) + renderSize
+isOnSquare :: Square -> Number -> Number -> Boolean
+isOnSquare square x y =
+  let vx = square.rx + square.ox
+      vy = square.ry + square.oy
+  in vx < x && x < vx + renderSize && vy < y && y < vy + renderSize
 
 movePiece :: Coordinate -> Coordinate -> Grid -> Grid
 movePiece from to grid = grid { squares = newSquares }
@@ -73,13 +74,12 @@ movePiece from to grid = grid { squares = newSquares }
       newSquares = fromJust (modifyAt fromIndex (setPiece Nothing) afterMove)
 
 renderSquare :: forall e.
-                  Tuple Number Number ->
                   Context2D ->
                   Maybe DOMEvent ->
                   Unit ->
                   Square ->
                   Eff (canvas :: Canvas, console :: CONSOLE, dom :: DOM | e) Unit
-renderSquare offset ctx event _ square = do
+renderSquare ctx event _ square = do
   withContext ctx $ do
     setFillStyle square.color ctx
     fillRect ctx { x: square.rx, y: square.ry, w: renderSize, h: renderSize }
@@ -98,7 +98,7 @@ renderSquare offset ctx event _ square = do
           Just e -> do
             ux <- unsafeEventNumberProp "clientX" e
             uy <- unsafeEventNumberProp "clientY" e
-            case isOnSquare offset square (toNumber ux) (toNumber uy) of
+            case isOnSquare square (toNumber ux) (toNumber uy) of
               true -> do
                 setLineWidth highlightWidth ctx
                 strokePath ctx $ arc ctx arcPiece
@@ -109,15 +109,14 @@ renderSquare offset ctx event _ square = do
     _ -> return unit
 
 render :: forall s e.
-            Tuple Number Number ->
             Context2D ->
             STRef s State ->
             Maybe DOMEvent ->
             Eff (st :: ST s, canvas :: Canvas, console :: CONSOLE, dom :: DOM | e) Unit
-render offset ctx st event = do
+render ctx st event = do
   state <- readSTRef st
   withContext ctx $ do
-    foldM (renderSquare offset ctx event) unit state.grid.squares
+    foldM (renderSquare ctx event) unit state.grid.squares
   withContext ctx $ do
     setStrokeStyle "black" ctx
     strokeRect ctx { x: 0.5,
@@ -127,24 +126,22 @@ render offset ctx st event = do
   return unit
 
 renderPage :: forall s e.
-                Tuple Number Number ->
                 STRef s State ->
                 Maybe DOMEvent ->
                 Eff (st :: ST s, canvas :: Canvas, console :: CONSOLE, dom :: DOM | e) Unit
-renderPage offset st event = do
+renderPage st event = do
   element <- getCanvasElementById "canvas"
   case element of
     Just canvas -> do
       setCanvasDimensions renderDimension canvas
       ctx <- getContext2D canvas
-      render offset ctx st event
+      render ctx st event
       return unit
     _ -> return unit
   return unit
 
 main :: forall s e. Eff (st :: ST s, canvas :: Canvas, console :: CONSOLE, dom :: DOM | e) Unit
 main = do
-  st <- newSTRef (createState defaultWidth defaultHeight layerCount)
   doc <- document globalWindow
   mcanvas <- getElementById "canvas" doc
   case mcanvas of
@@ -152,7 +149,8 @@ main = do
       x <- offsetLeft canvas
       y <- offsetTop canvas
       let offset = (Tuple (toNumber x) (toNumber y))
-      addMouseEventListener MouseMoveEvent (\e -> renderPage offset st (Just e)) canvas
-      renderPage offset st Nothing
+      st <- newSTRef (createState offset defaultWidth defaultHeight layerCount)
+      addMouseEventListener MouseMoveEvent (\e -> renderPage st (Just e)) canvas
+      renderPage st Nothing
       return unit
     _ -> return unit
