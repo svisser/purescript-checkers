@@ -72,7 +72,13 @@ movePiece from to grid = grid { squares = newSquares }
       afterMove = fromJust (modifyAt toIndex (setPiece originalSquare.piece) grid.squares)
       newSquares = fromJust (modifyAt fromIndex (setPiece Nothing) afterMove)
 
-renderSquare :: forall e. Tuple Number Number -> Context2D -> Maybe DOMEvent -> Unit -> Square -> Eff (canvas :: Canvas, console :: CONSOLE, dom :: DOM | e) Unit
+renderSquare :: forall e.
+                  Tuple Number Number ->
+                  Context2D ->
+                  Maybe DOMEvent ->
+                  Unit ->
+                  Square ->
+                  Eff (canvas :: Canvas, console :: CONSOLE, dom :: DOM | e) Unit
 renderSquare offset ctx event _ square = do
   withContext ctx $ do
     setFillStyle square.color ctx
@@ -102,7 +108,12 @@ renderSquare offset ctx event _ square = do
         return unit
     _ -> return unit
 
-render :: forall s e. Tuple Number Number -> Context2D -> STRef s State -> Maybe DOMEvent -> Eff (st :: ST s, canvas :: Canvas, console :: CONSOLE, dom :: DOM | e) Unit
+render :: forall s e.
+            Tuple Number Number ->
+            Context2D ->
+            STRef s State ->
+            Maybe DOMEvent ->
+            Eff (st :: ST s, canvas :: Canvas, console :: CONSOLE, dom :: DOM | e) Unit
 render offset ctx st event = do
   state <- readSTRef st
   withContext ctx $ do
@@ -115,6 +126,11 @@ render offset ctx st event = do
                      h: (toNumber state.grid.height) * renderSize - 0.5 }
   return unit
 
+renderPage :: forall s e.
+                Tuple Number Number ->
+                STRef s State ->
+                Maybe DOMEvent ->
+                Eff (st :: ST s, canvas :: Canvas, console :: CONSOLE, dom :: DOM | e) Unit
 renderPage offset st event = do
   element <- getCanvasElementById "canvas"
   case element of
@@ -126,6 +142,7 @@ renderPage offset st event = do
     _ -> return unit
   return unit
 
+main :: forall s e. Eff (st :: ST s, canvas :: Canvas, console :: CONSOLE, dom :: DOM | e) Unit
 main = do
   st <- newSTRef (createState defaultWidth defaultHeight layerCount)
   doc <- document globalWindow
