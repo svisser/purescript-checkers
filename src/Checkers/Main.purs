@@ -108,6 +108,16 @@ renderSquare ctx event _ square = do
         return unit
     _ -> return unit
 
+renderBorder :: forall e. Context2D -> Grid -> Eff (canvas :: Canvas | e) Unit
+renderBorder ctx grid = do
+  let border = { x: 0.5,
+                 y: 0.5,
+                 w: (toNumber grid.width) * renderSize - 0.5,
+                 h: (toNumber grid.height) * renderSize - 0.5 }
+  setStrokeStyle "black" ctx
+  strokeRect ctx border
+  return unit
+
 render :: forall s e.
             Context2D ->
             STRef s State ->
@@ -118,11 +128,7 @@ render ctx st event = do
   withContext ctx $ do
     foldM (renderSquare ctx event) unit state.grid.squares
   withContext ctx $ do
-    setStrokeStyle "black" ctx
-    strokeRect ctx { x: 0.5,
-                     y: 0.5,
-                     w: (toNumber state.grid.width) * renderSize - 0.5,
-                     h: (toNumber state.grid.height) * renderSize - 0.5 }
+    renderBorder ctx state.grid
   return unit
 
 renderPage :: forall s e.
