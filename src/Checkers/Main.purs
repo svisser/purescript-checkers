@@ -85,9 +85,8 @@ renderSquare :: forall e.
                   Square ->
                   Eff (canvas :: Canvas, console :: CONSOLE, dom :: DOM | e) Unit
 renderSquare ctx event _ square = do
-  withContext ctx $ do
-    setFillStyle square.color ctx
-    fillRect ctx { x: square.rx, y: square.ry, w: renderSize, h: renderSize }
+  setFillStyle square.color ctx
+  fillRect ctx { x: square.rx, y: square.ry, w: renderSize, h: renderSize }
   return unit
 
 renderPiece :: forall e.
@@ -99,27 +98,26 @@ renderPiece :: forall e.
 renderPiece ctx event _ square =
   case square.piece of
     Just piece -> do
-      withContext ctx $ do
-        setFillStyle piece.color ctx
-        let arcPiece = { x: square.rx + 0.5 * renderSize,
-                         y: square.ry + 0.5 * renderSize,
-                         r: (renderSize / 2.0) * 0.8,
-                         start: 0.0,
-                         end: 2.0 * pi }
-        fillPath ctx $ arc ctx arcPiece
-        case event of
-          Nothing -> return unit
-          Just e -> do
-            ux <- unsafeEventNumberProp "clientX" e
-            uy <- unsafeEventNumberProp "clientY" e
-            case isOnSquare square (toNumber ux) (toNumber uy) of
-              true -> do
-                setLineWidth highlightWidth ctx
-                strokePath ctx $ arc ctx arcPiece
-                return unit
-              false -> return unit
-            return unit
-        return unit
+      setFillStyle piece.color ctx
+      let arcPiece = { x: square.rx + 0.5 * renderSize,
+                       y: square.ry + 0.5 * renderSize,
+                       r: (renderSize / 2.0) * 0.8,
+                       start: 0.0,
+                       end: 2.0 * pi }
+      fillPath ctx $ arc ctx arcPiece
+      case event of
+        Nothing -> return unit
+        Just e -> do
+          ux <- unsafeEventNumberProp "clientX" e
+          uy <- unsafeEventNumberProp "clientY" e
+          case isOnSquare square (toNumber ux) (toNumber uy) of
+            true -> do
+              setLineWidth highlightWidth ctx
+              strokePath ctx $ arc ctx arcPiece
+              return unit
+            false -> return unit
+          return unit
+      return unit
     _ -> return unit
 
 renderBorder :: forall e. Context2D -> Grid -> Eff (canvas :: Canvas | e) Unit
