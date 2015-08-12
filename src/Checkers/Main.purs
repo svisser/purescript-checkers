@@ -88,6 +88,15 @@ renderSquare ctx event _ square = do
   withContext ctx $ do
     setFillStyle square.color ctx
     fillRect ctx { x: square.rx, y: square.ry, w: renderSize, h: renderSize }
+  return unit
+
+renderPiece :: forall e.
+                 Context2D ->
+                 Maybe DOMEvent ->
+                 Unit ->
+                 Square ->
+                 Eff (canvas :: Canvas, console :: CONSOLE, dom :: DOM | e) Unit
+renderPiece ctx event _ square =
   case square.piece of
     Just piece -> do
       withContext ctx $ do
@@ -132,6 +141,8 @@ render ctx st event = do
   state <- readSTRef st
   withContext ctx $ do
     foldM (renderSquare ctx event) unit state.grid.squares
+  withContext ctx $ do
+    foldM (renderPiece ctx event) unit state.grid.squares
   withContext ctx $ do
     renderBorder ctx state.grid
   return unit
