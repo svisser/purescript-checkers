@@ -24,10 +24,9 @@ import Checkers.Types
 
 createPiece :: Player -> Piece
 createPiece player =
-  let color = if player == playerOne
-              then colorPlayerOne
-              else colorPlayerTwo
-  in { player: player, color: color, king: false }
+  { player: player,
+    color:  if player == playerOne then colorPlayerOne else colorPlayerTwo,
+    king:   false }
 
 createGrid :: Pixel -> Int -> Int -> Int -> Grid
 createGrid offset width height layers = { width: width, height: height, squares: squares }
