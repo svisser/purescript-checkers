@@ -48,8 +48,9 @@ createGrid (Tuple ox oy) width height layers = { width: width, height: height, s
 
 createState :: Tuple Number Number -> Int -> Int -> Int -> State
 createState offset width height layers =
-  { grid: (createGrid offset width height layers),
-    currentPlayer: playerOne }
+  { grid:               createGrid offset width height layers,
+    currentPlayer:      playerOne,
+    selectedCoordinate: Nothing }
 
 setPiece :: Maybe Piece -> Square -> Square
 setPiece piece square = square { piece = piece }
