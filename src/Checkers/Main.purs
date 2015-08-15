@@ -205,6 +205,12 @@ render ctx st event = do
     foldM (renderPiece state ctx event) unit state.grid.squares
   withContext ctx $ do
     renderBorder ctx state.grid
+  withContext ctx $ do
+    case state.selectedCoordinate of
+      Nothing -> return unit
+      Just coordinate -> do
+        highlightPiece ctx (fromJust (getSquare state.grid.squares coordinate))
+        return unit
   return unit
 
 renderPage :: forall s e.
