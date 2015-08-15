@@ -104,8 +104,8 @@ isOnActiveSquare grid player pixel square =
 getActiveCoordinate :: Grid -> Player -> Pixel -> Maybe Coordinate
 getActiveCoordinate grid player pixel =
   case findIndex (isOnActiveSquare grid player pixel) grid.squares of
-    Nothing -> Nothing
-    Just index -> Just (fromJust (grid.squares !! index)).coordinate
+    Just index -> (\s -> s.coordinate) <$> grid.squares !! index
+    Nothing    -> Nothing
 
 isValidMove :: Grid -> Player -> Coordinate -> Coordinate -> Boolean
 isValidMove grid player from to = not hasPiece grid.squares to &&
