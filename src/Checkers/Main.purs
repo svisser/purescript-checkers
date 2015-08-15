@@ -2,6 +2,7 @@ module Checkers.Main where
 
 import Control.Monad.Eff
 import Control.Monad.ST
+import Control.MonadPlus (guard)
 import Data.Array
 import Data.DOM.Simple.Document
 import Data.DOM.Simple.Element
@@ -84,6 +85,17 @@ isOnSquare square x y =
   let vx = square.rx + square.ox
       vy = square.ry + square.oy
   in vx < x && x < vx + renderSize && vy < y && y < vy + renderSize
+
+isValidMove :: Grid -> Player -> Coordinate -> Coordinate -> Boolean
+isValidMove grid player from to = not hasPiece grid.squares to &&
+  ((player == playerOne && snd to > snd from) ||
+   (player == playerTwo && snd to < snd from))
+
+getMoves :: Grid -> Player -> Coordinate -> Array Coordinate
+getMoves grid player coordinate = do
+  potential <- getDiagonalSquares coordinate
+  guard $ (isValid grid potential && isValidMove grid player coordinate potential)
+  return potential
 
 movePiece :: Coordinate -> Coordinate -> Grid -> Grid
 movePiece from to grid = grid { squares = newSquares }

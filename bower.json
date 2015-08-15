@@ -13,6 +13,7 @@
   "dependencies": {
     "purescript-arrays": "0.4.x",
     "purescript-console": "^0.1.0",
+    "purescript-control": "0.3.x",
     "purescript-canvas": "0.3.x",
     "purescript-integers": "0.2.x",
     "purescript-maybe": "0.3.x",
