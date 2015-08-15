@@ -64,12 +64,18 @@ isValid grid (Tuple x y) = x >= 0 && x < grid.width && y >= 0 && y < grid.height
 getCoordinateIndex :: Array Square -> Coordinate -> Maybe Int
 getCoordinateIndex squares coordinate = findIndex (\s -> s.coordinate == coordinate) squares
 
+getSquare :: Array Square -> Coordinate -> Maybe Square
+getSquare squares coordinate =
+  case getCoordinateIndex squares coordinate of
+    Nothing -> Nothing
+    Just index -> squares !! index
+
 hasPlayerPiece :: Array Square -> Coordinate -> Player -> Boolean
 hasPlayerPiece squares coordinate player =
-  case getCoordinateIndex squares coordinate of
+  case getSquare squares coordinate of
     Nothing -> false
-    Just index ->
-      case (fromJust (squares !! index)).piece of
+    Just square ->
+      case square.piece of
         Nothing -> false
         Just p -> p.player == player
 
