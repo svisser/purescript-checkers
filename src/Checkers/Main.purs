@@ -84,16 +84,16 @@ getDiagonalSquares (Tuple x y) = do
   j <- -1 : (singleton 1)
   return (Tuple (x + i) (y + j))
 
-isOnSquare :: Square -> Number -> Number -> Boolean
-isOnSquare square x y =
+isOnSquare :: Square -> Pixel -> Boolean
+isOnSquare square (Tuple x y) =
   let vx = fst square.render + fst square.offset
       vy = snd square.render + snd square.offset
   in vx < x && x < vx + renderSize && vy < y && y < vy + renderSize
 
-isOnActiveSquare :: Grid -> Player -> Square -> Number -> Number -> Boolean
-isOnActiveSquare grid player square ux uy =
+isOnActiveSquare :: Grid -> Player -> Square -> Pixel -> Boolean
+isOnActiveSquare grid player square pixel =
   let moves = getMoves grid player square.coordinate
-  in isOnSquare square ux uy && not (null moves)
+  in isOnSquare square pixel && not (null moves)
 
 isValidMove :: Grid -> Player -> Coordinate -> Coordinate -> Boolean
 isValidMove grid player from to = not hasPiece grid.squares to &&
@@ -151,7 +151,8 @@ renderPiece state ctx event _ square =
         Just e -> do
           ux <- unsafeEventNumberProp "clientX" e
           uy <- unsafeEventNumberProp "clientY" e
-          case isOnActiveSquare state.grid state.currentPlayer square (toNumber ux) (toNumber uy) of
+          let pixel = Tuple (toNumber ux) (toNumber uy)
+          case isOnActiveSquare state.grid state.currentPlayer square pixel of
             true -> do
               setLineWidth highlightWidth ctx
               strokePath ctx $ arc ctx arcPiece
