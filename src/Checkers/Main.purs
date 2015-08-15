@@ -53,6 +53,9 @@ createState offset width height layers =
 setPiece :: Maybe Piece -> Square -> Square
 setPiece piece square = square { piece = piece }
 
+isValid :: Grid -> Coordinate -> Boolean
+isValid grid (Tuple x y) = x >= 0 && x < grid.width && y >= 0 && y < grid.height
+
 getCoordinateIndex :: Array Square -> Coordinate -> Maybe Int
 getCoordinateIndex squares coordinate = findIndex (\e -> (Tuple e.x e.y) == coordinate) squares
 
