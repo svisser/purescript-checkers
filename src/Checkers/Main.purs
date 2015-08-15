@@ -90,8 +90,8 @@ isOnSquare square (Tuple x y) =
       vy = snd square.render + snd square.offset
   in vx < x && x < vx + renderSize && vy < y && y < vy + renderSize
 
-isOnActiveSquare :: Grid -> Player -> Square -> Pixel -> Boolean
-isOnActiveSquare grid player square pixel =
+isOnActiveSquare :: Grid -> Player -> Pixel -> Square -> Boolean
+isOnActiveSquare grid player pixel square =
   let moves = getMoves grid player square.coordinate
   in isOnSquare square pixel && not (null moves)
 
