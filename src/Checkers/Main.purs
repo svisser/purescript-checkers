@@ -50,11 +50,11 @@ createState offset width height layers =
   { grid: (createGrid offset width height layers),
     currentPlayer: playerOne }
 
-findPiece :: Grid -> Coordinate -> Maybe Int
-findPiece grid (Tuple x y) = findIndex (\e -> e.x == x && e.y == y) grid.squares
-
 setPiece :: Maybe Piece -> Square -> Square
 setPiece piece square = square { piece = piece }
+
+getCoordinateIndex :: Array Square -> Coordinate -> Maybe Int
+getCoordinateIndex squares coordinate = findIndex (\e -> (Tuple e.x e.y) == coordinate) squares
 
 getDiagonalSquares :: Coordinate -> Array Coordinate
 getDiagonalSquares (Tuple x y) = do
@@ -71,8 +71,8 @@ isOnSquare square x y =
 movePiece :: Coordinate -> Coordinate -> Grid -> Grid
 movePiece from to grid = grid { squares = newSquares }
     where
-      fromIndex = fromJust (findPiece grid from)
-      toIndex = fromJust (findPiece grid to)
+      fromIndex = fromJust (getCoordinateIndex grid.squares from)
+      toIndex = fromJust (getCoordinateIndex grid.squares to)
       originalSquare = fromJust (grid.squares !! fromIndex)
       afterMove = fromJust (modifyAt toIndex (setPiece originalSquare.piece) grid.squares)
       newSquares = fromJust (modifyAt fromIndex (setPiece Nothing) afterMove)
