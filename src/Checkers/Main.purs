@@ -152,11 +152,8 @@ renderPiece state ctx event _ square =
           ux <- unsafeEventNumberProp "clientX" e
           uy <- unsafeEventNumberProp "clientY" e
           let pixel = Tuple (toNumber ux) (toNumber uy)
-          case isOnActiveSquare state.grid state.currentPlayer square pixel of
-            true -> do
-              setLineWidth highlightWidth ctx
-              strokePath ctx $ arc ctx arcPiece
-              return unit
+          case isOnActiveSquare state.grid state.currentPlayer pixel square of
+            true -> highlightPiece ctx square
             false -> return unit
           return unit
       return unit
@@ -170,6 +167,17 @@ renderBorder ctx grid = do
                  h: (toNumber grid.height) * renderSize - 0.5 }
   setStrokeStyle "black" ctx
   strokeRect ctx border
+  return unit
+
+highlightPiece :: forall e. Context2D -> Square -> Eff (canvas :: Canvas | e) Unit
+highlightPiece ctx square = do
+  let arcPiece = { x: fst square.render + 0.5 * renderSize,
+                   y: snd square.render + 0.5 * renderSize,
+                   r: (renderSize / 2.0) * 0.8,
+                   start: 0.0,
+                   end: 2.0 * pi }
+  setLineWidth highlightWidth ctx
+  strokePath ctx $ arc ctx arcPiece
   return unit
 
 render :: forall s e.
