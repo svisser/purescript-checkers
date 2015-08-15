@@ -3,6 +3,8 @@ module Checkers.Types where
 import Data.Maybe
 import Data.Tuple
 
+type Pixel = Tuple Number Number
+
 type Coordinate = Tuple Int Int
 
 type Player = Int
@@ -14,14 +16,11 @@ type Piece = {
 }
 
 type Square = {
-    ox      :: Number,
-    oy      :: Number,
-    x       :: Int,
-    y       :: Int,
-    rx      :: Number,
-    ry      :: Number,
-    color   :: String,
-    piece   :: Maybe Piece
+    offset     :: Pixel,
+    coordinate :: Coordinate,
+    render     :: Pixel,
+    color      :: String,
+    piece      :: Maybe Piece
 }
 
 type Grid = {

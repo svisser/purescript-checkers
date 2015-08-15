@@ -29,8 +29,8 @@ createPiece player =
               else colorPlayerTwo
   in { player: player, color: color, king: false }
 
-createGrid :: Tuple Number Number -> Int -> Int -> Int -> Grid
-createGrid (Tuple ox oy) width height layers = { width: width, height: height, squares: squares }
+createGrid :: Pixel -> Int -> Int -> Int -> Grid
+createGrid offset width height layers = { width: width, height: height, squares: squares }
   where
     squares = do
       x <- 0 .. (width - 1)
@@ -44,9 +44,13 @@ createGrid (Tuple ox oy) width height layers = { width: width, height: height, s
                   else if isPieceSquare && (y >= height - layers)
                        then Just (createPiece playerTwo)
                        else Nothing
-      return { ox: ox, oy: oy, x: x, y: y, rx: rx, ry: ry, color: color, piece: piece }
+      return { offset:     offset,
+               coordinate: (Tuple x y),
+               render:     (Tuple rx ry),
+               color:      color,
+               piece:      piece }
 
-createState :: Tuple Number Number -> Int -> Int -> Int -> State
+createState :: Pixel -> Int -> Int -> Int -> State
 createState offset width height layers =
   { grid:               createGrid offset width height layers,
     currentPlayer:      playerOne,
@@ -59,7 +63,7 @@ isValid :: Grid -> Coordinate -> Boolean
 isValid grid (Tuple x y) = x >= 0 && x < grid.width && y >= 0 && y < grid.height
 
 getCoordinateIndex :: Array Square -> Coordinate -> Maybe Int
-getCoordinateIndex squares coordinate = findIndex (\e -> (Tuple e.x e.y) == coordinate) squares
+getCoordinateIndex squares coordinate = findIndex (\s -> s.coordinate == coordinate) squares
 
 hasPlayerPiece :: Array Square -> Coordinate -> Player -> Boolean
 hasPlayerPiece squares coordinate player =
@@ -83,13 +87,13 @@ getDiagonalSquares (Tuple x y) = do
 
 isOnSquare :: Square -> Number -> Number -> Boolean
 isOnSquare square x y =
-  let vx = square.rx + square.ox
-      vy = square.ry + square.oy
+  let vx = fst square.render + fst square.offset
+      vy = snd square.render + snd square.offset
   in vx < x && x < vx + renderSize && vy < y && y < vy + renderSize
 
 isOnActiveSquare :: Grid -> Player -> Square -> Number -> Number -> Boolean
 isOnActiveSquare grid player square ux uy =
-  let moves = getMoves grid player (Tuple square.x square.y)
+  let moves = getMoves grid player square.coordinate
   in isOnSquare square ux uy && not (null moves)
 
 isValidMove :: Grid -> Player -> Coordinate -> Coordinate -> Boolean
@@ -120,7 +124,10 @@ renderSquare :: forall e.
                   Eff (canvas :: Canvas, dom :: DOM | e) Unit
 renderSquare ctx event _ square = do
   setFillStyle square.color ctx
-  fillRect ctx { x: square.rx, y: square.ry, w: renderSize, h: renderSize }
+  fillRect ctx { x: fst square.render,
+                 y: snd square.render,
+                 w: renderSize,
+                 h: renderSize }
   return unit
 
 renderPiece :: forall e.
@@ -134,8 +141,8 @@ renderPiece state ctx event _ square =
   case square.piece of
     Just piece -> do
       setFillStyle piece.color ctx
-      let arcPiece = { x: square.rx + 0.5 * renderSize,
-                       y: square.ry + 0.5 * renderSize,
+      let arcPiece = { x: fst square.render + 0.5 * renderSize,
+                       y: snd square.render + 0.5 * renderSize,
                        r: (renderSize / 2.0) * 0.8,
                        start: 0.0,
                        end: 2.0 * pi }
