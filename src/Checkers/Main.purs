@@ -1,7 +1,6 @@
 module Checkers.Main where
 
 import Control.Monad.Eff
-import Control.Monad.Eff.Console
 import Control.Monad.ST
 import Data.Array
 import Data.DOM.Simple.Document
@@ -83,7 +82,7 @@ renderSquare :: forall e.
                   Maybe DOMEvent ->
                   Unit ->
                   Square ->
-                  Eff (canvas :: Canvas, console :: CONSOLE, dom :: DOM | e) Unit
+                  Eff (canvas :: Canvas, dom :: DOM | e) Unit
 renderSquare ctx event _ square = do
   setFillStyle square.color ctx
   fillRect ctx { x: square.rx, y: square.ry, w: renderSize, h: renderSize }
@@ -94,7 +93,7 @@ renderPiece :: forall e.
                  Maybe DOMEvent ->
                  Unit ->
                  Square ->
-                 Eff (canvas :: Canvas, console :: CONSOLE, dom :: DOM | e) Unit
+                 Eff (canvas :: Canvas, dom :: DOM | e) Unit
 renderPiece ctx event _ square =
   case square.piece of
     Just piece -> do
@@ -134,7 +133,7 @@ render :: forall s e.
             Context2D ->
             STRef s State ->
             Maybe DOMEvent ->
-            Eff (st :: ST s, canvas :: Canvas, console :: CONSOLE, dom :: DOM | e) Unit
+            Eff (st :: ST s, canvas :: Canvas, dom :: DOM | e) Unit
 render ctx st event = do
   state <- readSTRef st
   withContext ctx $ do
@@ -148,7 +147,7 @@ render ctx st event = do
 renderPage :: forall s e.
                 STRef s State ->
                 Maybe DOMEvent ->
-                Eff (st :: ST s, canvas :: Canvas, console :: CONSOLE, dom :: DOM | e) Unit
+                Eff (st :: ST s, canvas :: Canvas, dom :: DOM | e) Unit
 renderPage st event = do
   element <- getCanvasElementById "canvas"
   case element of
@@ -160,7 +159,7 @@ renderPage st event = do
     _ -> return unit
   return unit
 
-main :: forall s e. Eff (st :: ST s, canvas :: Canvas, console :: CONSOLE, dom :: DOM | e) Unit
+main :: forall s e. Eff (st :: ST s, canvas :: Canvas, dom :: DOM | e) Unit
 main = do
   doc <- document globalWindow
   mcanvas <- getElementById "canvas" doc
