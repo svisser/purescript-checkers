@@ -59,6 +59,20 @@ isValid grid (Tuple x y) = x >= 0 && x < grid.width && y >= 0 && y < grid.height
 getCoordinateIndex :: Array Square -> Coordinate -> Maybe Int
 getCoordinateIndex squares coordinate = findIndex (\e -> (Tuple e.x e.y) == coordinate) squares
 
+hasPlayerPiece :: Array Square -> Coordinate -> Player -> Boolean
+hasPlayerPiece squares coordinate player =
+  case getCoordinateIndex squares coordinate of
+    Nothing -> false
+    Just index ->
+      case (fromJust (squares !! index)).piece of
+        Nothing -> false
+        Just p -> p.player == player
+
+hasPiece :: Array Square -> Coordinate -> Boolean
+hasPiece squares coordinate =
+  hasPlayerPiece squares coordinate playerOne ||
+  hasPlayerPiece squares coordinate playerTwo
+
 getDiagonalSquares :: Coordinate -> Array Coordinate
 getDiagonalSquares (Tuple x y) = do
   i <- -1 : (singleton 1)
