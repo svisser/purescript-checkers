@@ -87,6 +87,11 @@ isOnSquare square x y =
       vy = square.ry + square.oy
   in vx < x && x < vx + renderSize && vy < y && y < vy + renderSize
 
+isOnActiveSquare :: Grid -> Player -> Square -> Number -> Number -> Boolean
+isOnActiveSquare grid player square ux uy =
+  let moves = getMoves grid player (Tuple square.x square.y)
+  in isOnSquare square ux uy && not (null moves)
+
 isValidMove :: Grid -> Player -> Coordinate -> Coordinate -> Boolean
 isValidMove grid player from to = not hasPiece grid.squares to &&
   ((player == playerOne && snd to > snd from) ||
@@ -140,8 +145,7 @@ renderPiece state ctx event _ square =
         Just e -> do
           ux <- unsafeEventNumberProp "clientX" e
           uy <- unsafeEventNumberProp "clientY" e
-          let moves = getMoves state.grid state.currentPlayer (Tuple square.x square.y)
-          case isOnSquare square (toNumber ux) (toNumber uy) && not (null moves) of
+          case isOnActiveSquare state.grid state.currentPlayer square (toNumber ux) (toNumber uy) of
             true -> do
               setLineWidth highlightWidth ctx
               strokePath ctx $ arc ctx arcPiece
