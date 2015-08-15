@@ -195,6 +195,19 @@ renderPage st event = do
     _ -> return unit
   return unit
 
+clickListener :: forall s e.
+                   STRef s State ->
+                   DOMEvent ->
+                   Eff (st :: ST s, canvas :: Canvas, dom :: DOM | e) Unit
+clickListener st event = do
+  element <- getCanvasElementById "canvas"
+  case element of
+    Just canvas -> do
+      renderPage st (Just event)
+      return unit
+    _ -> return unit
+  return unit
+
 main :: forall s e. Eff (st :: ST s, canvas :: Canvas, dom :: DOM | e) Unit
 main = do
   doc <- document globalWindow
@@ -206,6 +219,7 @@ main = do
       let offset = (Tuple (toNumber x) (toNumber y))
       st <- newSTRef (createState offset defaultWidth defaultHeight layerCount)
       addMouseEventListener MouseMoveEvent (\e -> renderPage st (Just e)) canvas
+      addMouseEventListener MouseClickEvent (\e -> clickListener st e) canvas
       renderPage st Nothing
       return unit
     _ -> return unit
