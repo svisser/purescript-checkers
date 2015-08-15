@@ -118,12 +118,13 @@ renderSquare ctx event _ square = do
   return unit
 
 renderPiece :: forall e.
+                 State ->
                  Context2D ->
                  Maybe DOMEvent ->
                  Unit ->
                  Square ->
                  Eff (canvas :: Canvas, dom :: DOM | e) Unit
-renderPiece ctx event _ square =
+renderPiece state ctx event _ square =
   case square.piece of
     Just piece -> do
       setFillStyle piece.color ctx
@@ -138,7 +139,8 @@ renderPiece ctx event _ square =
         Just e -> do
           ux <- unsafeEventNumberProp "clientX" e
           uy <- unsafeEventNumberProp "clientY" e
-          case isOnSquare square (toNumber ux) (toNumber uy) of
+          let moves = getMoves state.grid state.currentPlayer (Tuple square.x square.y)
+          case isOnSquare square (toNumber ux) (toNumber uy) && not (null moves) of
             true -> do
               setLineWidth highlightWidth ctx
               strokePath ctx $ arc ctx arcPiece
@@ -168,7 +170,7 @@ render ctx st event = do
   withContext ctx $ do
     foldM (renderSquare ctx event) unit state.grid.squares
   withContext ctx $ do
-    foldM (renderPiece ctx event) unit state.grid.squares
+    foldM (renderPiece state ctx event) unit state.grid.squares
   withContext ctx $ do
     renderBorder ctx state.grid
   return unit
