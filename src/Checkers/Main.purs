@@ -95,6 +95,12 @@ isOnActiveSquare grid player pixel square =
   let moves = getMoves grid player square.coordinate
   in isOnSquare square pixel && not (null moves)
 
+getActiveCoordinate :: Grid -> Player -> Pixel -> Maybe Coordinate
+getActiveCoordinate grid player pixel =
+  case findIndex (isOnActiveSquare grid player pixel) grid.squares of
+    Nothing -> Nothing
+    Just index -> Just (fromJust (grid.squares !! index)).coordinate
+
 isValidMove :: Grid -> Player -> Coordinate -> Coordinate -> Boolean
 isValidMove grid player from to = not hasPiece grid.squares to &&
   ((player == playerOne && snd to > snd from) ||
@@ -214,11 +220,17 @@ clickListener :: forall s e.
                    STRef s State ->
                    DOMEvent ->
                    Eff (st :: ST s, canvas :: Canvas, dom :: DOM | e) Unit
-clickListener st event = do
+clickListener st e = do
   element <- getCanvasElementById "canvas"
   case element of
     Just canvas -> do
-      renderPage st (Just event)
+      state <- readSTRef st
+      ux <- unsafeEventNumberProp "clientX" e
+      uy <- unsafeEventNumberProp "clientY" e
+      let pixel = Tuple (toNumber ux) (toNumber uy)
+          activeCoordinate = getActiveCoordinate state.grid state.currentPlayer pixel
+      writeSTRef st $ state { selectedCoordinate = activeCoordinate }
+      renderPage st (Just e)
       return unit
     _ -> return unit
   return unit
