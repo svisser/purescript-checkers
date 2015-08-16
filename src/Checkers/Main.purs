@@ -66,13 +66,13 @@ getCoordinateIndex coordinate = findIndex (\s -> s.coordinate == coordinate)
 
 getSquare :: Array Square -> Coordinate -> Maybe Square
 getSquare squares coordinate =
-  fromMaybe Nothing ((\i -> squares !! i) <$> (getCoordinateIndex coordinate squares))
+  fromMaybe Nothing $ (squares !!) <$> (getCoordinateIndex coordinate squares)
 
 hasPlayerPiece :: Array Square -> Coordinate -> Player -> Boolean
 hasPlayerPiece squares coordinate player =
   case getSquare squares coordinate of
     Nothing -> false
-    Just square -> fromMaybe false ((\p -> p.player == player) <$> square.piece)
+    Just square -> fromMaybe false $ (\p -> p.player == player) <$> square.piece
 
 hasPiece :: Array Square -> Coordinate -> Boolean
 hasPiece squares coordinate =
