@@ -230,6 +230,12 @@ renderPage st event = do
     _ -> return unit
   return unit
 
+moveListener :: forall s e.
+                  STRef s State ->
+                  DOMEvent ->
+                  Eff (st :: ST s, canvas :: Canvas, dom :: DOM | e) Unit
+moveListener st e = renderPage st (Just e)
+
 clickListener :: forall s e.
                    STRef s State ->
                    DOMEvent ->
@@ -259,8 +265,8 @@ main = do
       y <- offsetTop canvas
       let offset = (Tuple (toNumber x) (toNumber y))
       st <- newSTRef (createState offset defaultWidth defaultHeight layerCount)
-      addMouseEventListener MouseMoveEvent (\e -> renderPage st (Just e)) canvas
-      addMouseEventListener MouseClickEvent (\e -> clickListener st e) canvas
+      addMouseEventListener MouseMoveEvent (moveListener st) canvas
+      addMouseEventListener MouseClickEvent (clickListener st) canvas
       renderPage st Nothing
       return unit
     _ -> return unit
