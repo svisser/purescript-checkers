@@ -2,15 +2,15 @@ module Checkers.Main where
 
 import Control.Monad.Eff
 import Control.Monad.ST
-import Control.MonadPlus (guard)
+import Control.MonadPlus
 import Data.Array
 import Data.DOM.Simple.Document
 import Data.DOM.Simple.Element
 import Data.DOM.Simple.Events
 import Data.DOM.Simple.Types
-import Data.DOM.Simple.Unsafe.Events (unsafeEventNumberProp)
+import Data.DOM.Simple.Unsafe.Events
 import Data.DOM.Simple.Window
-import Data.Int (even, odd, toNumber)
+import Data.Int
 import Data.Maybe
 import Data.Maybe.Unsafe
 import Data.Tuple
