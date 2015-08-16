@@ -2,12 +2,16 @@ module Checkers.Types where
 
 import Data.Maybe
 import Data.Tuple
+import Prelude
 
 type Pixel = Tuple Number Number
 
 type Coordinate = Tuple Int Int
 
-type Player = Int
+newtype Player = Player Int
+
+instance eqPlayer :: Eq Player where
+    eq (Player a) (Player b) = a == b
 
 type Piece = {
     player :: Player,
