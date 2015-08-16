@@ -74,10 +74,7 @@ hasPlayerPiece :: Array Square -> Coordinate -> Player -> Boolean
 hasPlayerPiece squares coordinate player =
   case getSquare squares coordinate of
     Nothing -> false
-    Just square ->
-      case square.piece of
-        Nothing -> false
-        Just p -> p.player == player
+    Just square -> fromMaybe false ((\p -> p.player == player) <$> square.piece)
 
 hasPiece :: Array Square -> Coordinate -> Boolean
 hasPiece squares coordinate =
