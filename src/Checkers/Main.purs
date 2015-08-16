@@ -114,6 +114,7 @@ isValidMove grid player from to = not hasPiece grid.squares to &&
 
 getMoves :: Grid -> Player -> Coordinate -> Array Coordinate
 getMoves grid player coordinate = do
+  guard $ hasPlayerPiece grid.squares coordinate player
   potential <- getDiagonalSquares coordinate
   guard $ (isValid grid potential && isValidMove grid player coordinate potential)
   return potential
