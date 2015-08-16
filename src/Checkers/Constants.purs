@@ -16,6 +16,7 @@ renderWidth     = (toNumber defaultWidth) * renderSize
 renderHeight    = (toNumber defaultHeight) * renderSize
 renderDimension = { width: renderWidth, height: renderHeight }
 
+colorBorder     = "black"
 colorSquareOne  = "#d18b47"
 colorSquareTwo  = "#ffce9e"
 colorPlayerOne  = "red"

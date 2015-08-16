@@ -175,7 +175,7 @@ renderBorder ctx grid = do
                  y: 0.5,
                  w: (toNumber grid.width) * renderSize - 0.5,
                  h: (toNumber grid.height) * renderSize - 0.5 }
-  setStrokeStyle "black" ctx
+  setStrokeStyle colorBorder ctx
   strokeRect ctx border
   return unit
 
