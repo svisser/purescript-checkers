@@ -65,7 +65,7 @@ hasPlayer :: Player -> Piece -> Boolean
 hasPlayer player piece = piece.player == player
 
 hasCoordinate :: Coordinate -> Square -> Boolean
-hasCoordinate coordinate square = coordinate == (_.coordinate square)
+hasCoordinate coordinate square = coordinate == square.coordinate
 
 getSquare :: Array Square -> Coordinate -> Maybe Square
 getSquare squares coordinate =
