@@ -101,6 +101,12 @@ isOnActiveSquare grid player pixel square =
   let moves = getMoves grid player square.coordinate
   in isOnSquare square pixel && not (null moves)
 
+isPotentialMove :: Grid -> Player -> Pixel -> Square -> Maybe Coordinate -> Boolean
+isPotentialMove grid player pixel square selection =
+  case selection of
+    Nothing -> false
+    Just s -> isOnSquare square pixel && isValidMove grid player s square.coordinate
+
 getActiveCoordinate :: Grid -> Player -> Pixel -> Maybe Coordinate
 getActiveCoordinate grid player pixel =
   case findIndex (isOnActiveSquare grid player pixel) grid.squares of
@@ -108,15 +114,20 @@ getActiveCoordinate grid player pixel =
     Nothing    -> Nothing
 
 isValidMove :: Grid -> Player -> Coordinate -> Coordinate -> Boolean
-isValidMove grid player from to = not hasPiece grid.squares to &&
-  ((player == playerOne && snd to > snd from) ||
-   (player == playerTwo && snd to < snd from))
+isValidMove grid player from to =
+  let d1 = from + Tuple   1    1
+      d2 = from + Tuple (-1)   1
+      d3 = from + Tuple   1  (-1)
+      d4 = from + Tuple (-1) (-1)
+      p1 = player == playerOne && ((d1 == to) || (d2 == to))
+      p2 = player == playerTwo && ((d3 == to) || (d4 == to))
+  in isValid grid to && not hasPiece grid.squares to && (p1 || p2)
 
 getMoves :: Grid -> Player -> Coordinate -> Array Coordinate
 getMoves grid player coordinate = do
   guard $ hasPlayerPiece grid.squares coordinate player
   potential <- getDiagonalSquares coordinate
-  guard $ (isValid grid potential && isValidMove grid player coordinate potential)
+  guard $ isValidMove grid player coordinate potential
   return potential
 
 movePiece :: Coordinate -> Coordinate -> Grid -> Grid
@@ -127,6 +138,12 @@ movePiece from to grid = grid { squares = newSquares }
       originalSquare = fromJust (grid.squares !! fromIndex)
       afterMove = fromJust (modifyAt toIndex (setPiece originalSquare.piece) grid.squares)
       newSquares = fromJust (modifyAt fromIndex (setPiece Nothing) afterMove)
+
+shouldHighlight :: State -> Pixel -> Square -> Boolean
+shouldHighlight state pixel square =
+  let option1 = isOnActiveSquare state.grid state.currentPlayer pixel square
+      option2 = isPotentialMove state.grid state.currentPlayer pixel square state.selectedCoordinate
+  in option1 || option2
 
 renderSquare :: forall e.
                   Context2D ->
@@ -149,7 +166,15 @@ renderPiece :: forall e.
                  Unit ->
                  Square ->
                  Eff (canvas :: Canvas, dom :: DOM | e) Unit
-renderPiece state ctx event _ square =
+renderPiece state ctx event _ square = do
+  case event of
+    Nothing -> return unit
+    Just e -> do
+      ux <- unsafeEventNumberProp "clientX" e
+      uy <- unsafeEventNumberProp "clientY" e
+      case shouldHighlight state (Tuple (toNumber ux) (toNumber uy)) square of
+        true -> renderHighlight ctx state.grid.squares (Just square.coordinate)
+        false -> return unit
   case square.piece of
     Just piece -> do
       setFillStyle piece.color ctx
@@ -159,16 +184,6 @@ renderPiece state ctx event _ square =
                        start: 0.0,
                        end: 2.0 * pi }
       fillPath ctx $ arc ctx arcPiece
-      case event of
-        Nothing -> return unit
-        Just e -> do
-          ux <- unsafeEventNumberProp "clientX" e
-          uy <- unsafeEventNumberProp "clientY" e
-          let pixel = Tuple (toNumber ux) (toNumber uy)
-          case isOnActiveSquare state.grid state.currentPlayer pixel square of
-            true -> renderHighlight ctx state.grid.squares (Just square.coordinate)
-            false -> return unit
-          return unit
       return unit
     _ -> return unit
 
