@@ -65,10 +65,7 @@ hasPlayer :: Player -> Piece -> Boolean
 hasPlayer player piece = piece.player == player
 
 hasCoordinate :: Coordinate -> Square -> Boolean
-hasCoordinate coordinate square = coordinate == getCoordinate square
-
-getCoordinate :: Square -> Coordinate
-getCoordinate square = square.coordinate
+hasCoordinate coordinate square = coordinate == (_.coordinate square)
 
 getSquare :: Array Square -> Coordinate -> Maybe Square
 getSquare squares coordinate =
@@ -107,7 +104,7 @@ isOnActiveSquare grid player pixel square =
 getActiveCoordinate :: Grid -> Player -> Pixel -> Maybe Coordinate
 getActiveCoordinate grid player pixel =
   case findIndex (isOnActiveSquare grid player pixel) grid.squares of
-    Just index -> getCoordinate <$> grid.squares !! index
+    Just index -> _.coordinate <$> grid.squares !! index
     Nothing    -> Nothing
 
 isValidMove :: Grid -> Player -> Coordinate -> Coordinate -> Boolean
