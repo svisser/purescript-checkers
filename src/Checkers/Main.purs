@@ -89,9 +89,11 @@ getDiagonalSquares (Tuple x y) = do
 
 isOnSquare :: Square -> Pixel -> Boolean
 isOnSquare square (Tuple x y) =
-  let vx = fst square.render + fst square.offset
-      vy = snd square.render + snd square.offset
-  in vx < x && x < vx + renderSize && vy < y && y < vy + renderSize
+  let px = square.render + square.offset
+      vx = fst px
+      vy = snd px
+  in vx < x && x < vx + renderSize &&
+     vy < y && y < vy + renderSize
 
 isOnActiveSquare :: Grid -> Player -> Pixel -> Square -> Boolean
 isOnActiveSquare grid player pixel square =
