@@ -61,8 +61,17 @@ setPiece piece square = square { piece = piece }
 isValid :: Grid -> Coordinate -> Boolean
 isValid grid (Tuple x y) = x >= 0 && x < grid.width && y >= 0 && y < grid.height
 
+hasPlayer :: Player -> Piece -> Boolean
+hasPlayer player piece = piece.player == player
+
+hasCoordinate :: Coordinate -> Square -> Boolean
+hasCoordinate coordinate square = coordinate == getCoordinate square
+
+getCoordinate :: Square -> Coordinate
+getCoordinate square = square.coordinate
+
 getCoordinateIndex :: Coordinate -> Array Square -> Maybe Int
-getCoordinateIndex coordinate = findIndex (\s -> s.coordinate == coordinate)
+getCoordinateIndex coordinate = findIndex (hasCoordinate coordinate)
 
 getSquare :: Array Square -> Coordinate -> Maybe Square
 getSquare squares coordinate =
@@ -72,7 +81,7 @@ hasPlayerPiece :: Array Square -> Coordinate -> Player -> Boolean
 hasPlayerPiece squares coordinate player =
   case getSquare squares coordinate of
     Nothing -> false
-    Just square -> fromMaybe false $ (\p -> p.player == player) <$> square.piece
+    Just square -> fromMaybe false $ (hasPlayer player) <$> square.piece
 
 hasPiece :: Array Square -> Coordinate -> Boolean
 hasPiece squares coordinate =
@@ -101,7 +110,7 @@ isOnActiveSquare grid player pixel square =
 getActiveCoordinate :: Grid -> Player -> Pixel -> Maybe Coordinate
 getActiveCoordinate grid player pixel =
   case findIndex (isOnActiveSquare grid player pixel) grid.squares of
-    Just index -> (\s -> s.coordinate) <$> grid.squares !! index
+    Just index -> getCoordinate <$> grid.squares !! index
     Nothing    -> Nothing
 
 isValidMove :: Grid -> Player -> Coordinate -> Coordinate -> Boolean
