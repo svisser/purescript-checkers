@@ -61,14 +61,12 @@ setPiece piece square = square { piece = piece }
 isValid :: Grid -> Coordinate -> Boolean
 isValid grid (Tuple x y) = x >= 0 && x < grid.width && y >= 0 && y < grid.height
 
-getCoordinateIndex :: Array Square -> Coordinate -> Maybe Int
-getCoordinateIndex squares coordinate = findIndex (\s -> s.coordinate == coordinate) squares
+getCoordinateIndex :: Coordinate -> Array Square -> Maybe Int
+getCoordinateIndex coordinate = findIndex (\s -> s.coordinate == coordinate)
 
 getSquare :: Array Square -> Coordinate -> Maybe Square
 getSquare squares coordinate =
-  case getCoordinateIndex squares coordinate of
-    Nothing -> Nothing
-    Just index -> squares !! index
+  fromMaybe Nothing ((\i -> squares !! i) <$> (getCoordinateIndex coordinate squares))
 
 hasPlayerPiece :: Array Square -> Coordinate -> Player -> Boolean
 hasPlayerPiece squares coordinate player =
@@ -121,8 +119,8 @@ getMoves grid player coordinate = do
 movePiece :: Coordinate -> Coordinate -> Grid -> Grid
 movePiece from to grid = grid { squares = newSquares }
     where
-      fromIndex = fromJust (getCoordinateIndex grid.squares from)
-      toIndex = fromJust (getCoordinateIndex grid.squares to)
+      fromIndex = fromJust (getCoordinateIndex from grid.squares)
+      toIndex = fromJust (getCoordinateIndex to grid.squares)
       originalSquare = fromJust (grid.squares !! fromIndex)
       afterMove = fromJust (modifyAt toIndex (setPiece originalSquare.piece) grid.squares)
       newSquares = fromJust (modifyAt fromIndex (setPiece Nothing) afterMove)
