@@ -163,7 +163,7 @@ renderPiece state ctx event _ square =
           uy <- unsafeEventNumberProp "clientY" e
           let pixel = Tuple (toNumber ux) (toNumber uy)
           case isOnActiveSquare state.grid state.currentPlayer pixel square of
-            true -> highlightPiece ctx square
+            true -> renderHighlight ctx state.grid.squares (Just square.coordinate)
             false -> return unit
           return unit
       return unit
@@ -179,16 +179,24 @@ renderBorder ctx grid = do
   strokeRect ctx border
   return unit
 
-highlightPiece :: forall e. Context2D -> Square -> Eff (canvas :: Canvas | e) Unit
-highlightPiece ctx square = do
-  let arcPiece = { x: fst square.render + 0.5 * renderSize,
-                   y: snd square.render + 0.5 * renderSize,
-                   r: (renderSize / 2.0) * 0.8,
-                   start: 0.0,
-                   end: 2.0 * pi }
-  setLineWidth highlightWidth ctx
-  strokePath ctx $ arc ctx arcPiece
-  return unit
+renderHighlight :: forall e.
+                     Context2D ->
+                     Array Square ->
+                     Maybe Coordinate ->
+                     Eff (canvas :: Canvas, dom :: DOM | e) Unit
+renderHighlight ctx squares selection = do
+  case selection of
+    Nothing -> return unit
+    Just coordinate -> do
+      let square = fromJust (getSquare squares coordinate)
+          arcPiece = { x:     fst square.render + 0.5 * renderSize,
+                       y:     snd square.render + 0.5 * renderSize,
+                       r:     (renderSize / 2.0) * 0.8,
+                       start: 0.0,
+                       end:   2.0 * pi }
+      setLineWidth highlightWidth ctx
+      strokePath ctx $ arc ctx arcPiece
+      return unit
 
 render :: forall s e.
             Context2D ->
@@ -204,11 +212,7 @@ render ctx st event = do
   withContext ctx $ do
     renderBorder ctx state.grid
   withContext ctx $ do
-    case state.selectedCoordinate of
-      Nothing -> return unit
-      Just coordinate -> do
-        highlightPiece ctx (fromJust (getSquare state.grid.squares coordinate))
-        return unit
+    renderHighlight ctx state.grid.squares state.selectedCoordinate
   return unit
 
 renderPage :: forall s e.
