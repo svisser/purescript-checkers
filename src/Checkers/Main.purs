@@ -269,10 +269,28 @@ clickListener st e = do
       ux <- unsafeEventNumberProp "clientX" e
       uy <- unsafeEventNumberProp "clientY" e
       let pixel = Tuple (toNumber ux) (toNumber uy)
-          activeCoordinate = getActiveCoordinate state.grid state.currentPlayer pixel
-      writeSTRef st $ state { selectedCoordinate = activeCoordinate }
-      renderPage st
-      return unit
+          toCoordinate = getHighlightCoordinate state pixel
+      case toCoordinate of
+        Nothing -> return unit
+        Just to -> do
+          case state.selectedCoordinate of
+            Nothing -> do
+              writeSTRef st $ state { selectedCoordinate = Just to }
+              renderPage st
+              return unit
+            Just from -> do
+              case isValidMove state.grid state.currentPlayer from to of
+                false -> do
+                  writeSTRef st $ state { selectedCoordinate = if to == from
+                                                               then Nothing
+                                                               else Just to }
+                  renderPage st
+                  return unit
+                true -> do
+                  writeSTRef st $ state { selectedCoordinate = Nothing,
+                                          grid = movePiece from to state.grid }
+                  renderPage st
+                  return unit
     _ -> return unit
   return unit
 
