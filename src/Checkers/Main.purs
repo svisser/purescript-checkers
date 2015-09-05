@@ -51,9 +51,10 @@ createGrid offset width height layers = { width: width, height: height, squares:
 
 createState :: Pixel -> Int -> Int -> Int -> State
 createState offset width height layers =
-  { grid:               createGrid offset width height layers,
-    currentPlayer:      playerOne,
-    selectedCoordinate: Nothing }
+  { grid:                  createGrid offset width height layers,
+    currentPlayer:         playerOne,
+    selectedCoordinate:    Nothing,
+    highlightedCoordinate: Nothing }
 
 setPiece :: Maybe Piece -> Square -> Square
 setPiece piece square = square { piece = piece }
@@ -88,8 +89,8 @@ getDiagonalSquares (Tuple x y) = do
   j <- -1 : (singleton 1)
   return (Tuple (x + i) (y + j))
 
-isOnSquare :: Square -> Pixel -> Boolean
-isOnSquare square (Tuple x y) =
+isOnSquare :: Pixel -> Square -> Boolean
+isOnSquare (Tuple x y) square =
   let px = square.render + square.offset
       px' = px + (Tuple renderSize renderSize)
   in fst px < x && x < fst px' && snd px < y && y < snd px'
@@ -97,19 +98,31 @@ isOnSquare square (Tuple x y) =
 isOnActiveSquare :: Grid -> Player -> Pixel -> Square -> Boolean
 isOnActiveSquare grid player pixel square =
   let moves = getMoves grid player square.coordinate
-  in isOnSquare square pixel && not (null moves)
-
-isPotentialMove :: Grid -> Player -> Pixel -> Square -> Maybe Coordinate -> Boolean
-isPotentialMove grid player pixel square selection =
-  case selection of
-    Nothing -> false
-    Just s -> isOnSquare square pixel && isValidMove grid player s square.coordinate
+  in isOnSquare pixel square && not (null moves)
 
 getActiveCoordinate :: Grid -> Player -> Pixel -> Maybe Coordinate
 getActiveCoordinate grid player pixel =
   case findIndex (isOnActiveSquare grid player pixel) grid.squares of
     Just index -> _.coordinate <$> grid.squares !! index
     Nothing    -> Nothing
+
+find :: Grid -> Player -> Pixel -> Maybe Coordinate
+find grid player pixel =
+  case findIndex (isOnSquare pixel) grid.squares of
+    Just index -> _.coordinate <$> grid.squares !! index
+    Nothing    -> Nothing
+
+getHighlightCoordinate :: State -> Pixel -> Maybe Coordinate
+getHighlightCoordinate state pixel =
+  case find state.grid state.currentPlayer pixel of
+    Nothing -> Nothing
+    Just to -> do
+      case state.selectedCoordinate of
+        Nothing -> getActiveCoordinate state.grid state.currentPlayer pixel
+        Just from ->
+          if isValidMove state.grid state.currentPlayer from to
+          then Just to
+          else getActiveCoordinate state.grid state.currentPlayer pixel
 
 isValidMove :: Grid -> Player -> Coordinate -> Coordinate -> Boolean
 isValidMove grid player from to =
@@ -137,19 +150,12 @@ movePiece from to grid = grid { squares = newSquares }
       afterMove = fromJust (modifyAt toIndex (setPiece originalSquare.piece) grid.squares)
       newSquares = fromJust (modifyAt fromIndex (setPiece Nothing) afterMove)
 
-shouldHighlight :: State -> Pixel -> Square -> Boolean
-shouldHighlight state pixel square =
-  let option1 = isOnActiveSquare state.grid state.currentPlayer pixel square
-      option2 = isPotentialMove state.grid state.currentPlayer pixel square state.selectedCoordinate
-  in option1 || option2
-
 renderSquare :: forall e.
                   Context2D ->
-                  Maybe DOMEvent ->
                   Unit ->
                   Square ->
                   Eff (canvas :: Canvas, dom :: DOM | e) Unit
-renderSquare ctx event _ square = do
+renderSquare ctx _ square = do
   setFillStyle square.color ctx
   fillRect ctx { x: fst square.render,
                  y: snd square.render,
@@ -160,19 +166,10 @@ renderSquare ctx event _ square = do
 renderPiece :: forall e.
                  State ->
                  Context2D ->
-                 Maybe DOMEvent ->
                  Unit ->
                  Square ->
                  Eff (canvas :: Canvas, dom :: DOM | e) Unit
-renderPiece state ctx event _ square = do
-  case event of
-    Nothing -> return unit
-    Just e -> do
-      ux <- unsafeEventNumberProp "clientX" e
-      uy <- unsafeEventNumberProp "clientY" e
-      case shouldHighlight state (Tuple (toNumber ux) (toNumber uy)) square of
-        true -> renderHighlight ctx state.grid.squares (Just square.coordinate)
-        false -> return unit
+renderPiece state ctx _ square = do
   case square.piece of
     Just piece -> do
       setFillStyle piece.color ctx
@@ -217,31 +214,31 @@ renderHighlight ctx squares selection = do
 render :: forall s e.
             Context2D ->
             STRef s State ->
-            Maybe DOMEvent ->
             Eff (st :: ST s, canvas :: Canvas, dom :: DOM | e) Unit
-render ctx st event = do
+render ctx st = do
   state <- readSTRef st
   withContext ctx $ do
-    foldM (renderSquare ctx event) unit state.grid.squares
+    foldM (renderSquare ctx) unit state.grid.squares
   withContext ctx $ do
-    foldM (renderPiece state ctx event) unit state.grid.squares
+    foldM (renderPiece state ctx) unit state.grid.squares
   withContext ctx $ do
     renderBorder ctx state.grid
   withContext ctx $ do
     renderHighlight ctx state.grid.squares state.selectedCoordinate
+  withContext ctx $ do
+    renderHighlight ctx state.grid.squares state.highlightedCoordinate
   return unit
 
 renderPage :: forall s e.
                 STRef s State ->
-                Maybe DOMEvent ->
                 Eff (st :: ST s, canvas :: Canvas, dom :: DOM | e) Unit
-renderPage st event = do
+renderPage st = do
   element <- getCanvasElementById "canvas"
   case element of
     Just canvas -> do
       setCanvasDimensions renderDimension canvas
       ctx <- getContext2D canvas
-      render ctx st event
+      render ctx st
       return unit
     _ -> return unit
   return unit
@@ -250,7 +247,15 @@ moveListener :: forall s e.
                   STRef s State ->
                   DOMEvent ->
                   Eff (st :: ST s, canvas :: Canvas, dom :: DOM | e) Unit
-moveListener st e = renderPage st (Just e)
+moveListener st e = do
+  ux <- unsafeEventNumberProp "clientX" e
+  uy <- unsafeEventNumberProp "clientY" e
+  state <- readSTRef st
+  let pixel = (Tuple (toNumber ux) (toNumber uy))
+      highlightedCoordinate = getHighlightCoordinate state pixel
+  writeSTRef st $ state { highlightedCoordinate = highlightedCoordinate }
+  renderPage st
+  return unit
 
 clickListener :: forall s e.
                    STRef s State ->
@@ -266,7 +271,7 @@ clickListener st e = do
       let pixel = Tuple (toNumber ux) (toNumber uy)
           activeCoordinate = getActiveCoordinate state.grid state.currentPlayer pixel
       writeSTRef st $ state { selectedCoordinate = activeCoordinate }
-      renderPage st (Just e)
+      renderPage st
       return unit
     _ -> return unit
   return unit
@@ -283,6 +288,6 @@ main = do
       st <- newSTRef (createState offset defaultWidth defaultHeight layerCount)
       addMouseEventListener MouseMoveEvent (moveListener st) canvas
       addMouseEventListener MouseClickEvent (clickListener st) canvas
-      renderPage st Nothing
+      renderPage st
       return unit
     _ -> return unit

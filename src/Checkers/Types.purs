@@ -34,7 +34,8 @@ type Grid = {
 }
 
 type State = {
-    grid               :: Grid,
-    currentPlayer      :: Player,
-    selectedCoordinate :: Maybe Coordinate
+    grid                  :: Grid,
+    currentPlayer         :: Player,
+    selectedCoordinate    :: Maybe Coordinate,
+    highlightedCoordinate :: Maybe Coordinate
 }
