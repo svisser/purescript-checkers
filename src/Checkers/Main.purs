@@ -150,6 +150,11 @@ movePiece from to grid = grid { squares = newSquares }
       afterMove = fromJust (modifyAt toIndex (setPiece originalSquare.piece) grid.squares)
       newSquares = fromJust (modifyAt fromIndex (setPiece Nothing) afterMove)
 
+switchPlayer :: Player -> Player
+switchPlayer (Player 1) = Player 2
+switchPlayer (Player 2) = Player 1
+switchPlayer _          = Player 1
+
 renderSquare :: forall e.
                   Context2D ->
                   Unit ->
@@ -288,7 +293,8 @@ clickListener st e = do
                   return unit
                 true -> do
                   writeSTRef st $ state { selectedCoordinate = Nothing,
-                                          grid = movePiece from to state.grid }
+                                          grid = movePiece from to state.grid,
+                                          currentPlayer = switchPlayer state.currentPlayer }
                   renderPage st
                   return unit
     _ -> return unit
