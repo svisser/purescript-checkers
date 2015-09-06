@@ -85,8 +85,8 @@ hasPiece squares coordinate =
 
 getDiagonalSquares :: Coordinate -> Array Coordinate
 getDiagonalSquares (Tuple x y) = do
-  i <- -1 : (singleton 1)
-  j <- -1 : (singleton 1)
+  i <- -2 : (-1 : (1 : (singleton 2)))
+  j <- -2 : (-1 : (1 : (singleton 2)))
   return (Tuple (x + i) (y + j))
 
 isOnSquare :: Pixel -> Square -> Boolean
@@ -130,8 +130,16 @@ isValidMove grid player from to =
       d2 = from + Tuple (-1)   1
       d3 = from + Tuple   1  (-1)
       d4 = from + Tuple (-1) (-1)
-      p1 = player == playerOne && ((d1 == to) || (d2 == to))
-      p2 = player == playerTwo && ((d3 == to) || (d4 == to))
+      d5 = from + Tuple   2    2
+      d6 = from + Tuple (-2)   2
+      d7 = from + Tuple   2  (-2)
+      d8 = from + Tuple (-2) (-2)
+      p1 = player == playerOne && ((d1 == to) || (d2 == to) ||
+                                   (d5 == to && hasPlayerPiece grid.squares d1 playerTwo) ||
+                                   (d6 == to && hasPlayerPiece grid.squares d2 playerTwo))
+      p2 = player == playerTwo && ((d3 == to) || (d4 == to) ||
+                                   (d7 == to && hasPlayerPiece grid.squares d3 playerOne) ||
+                                   (d8 == to && hasPlayerPiece grid.squares d4 playerOne))
   in isValid grid to && not hasPiece grid.squares to && (p1 || p2)
 
 getMoves :: Grid -> Player -> Coordinate -> Array Coordinate
