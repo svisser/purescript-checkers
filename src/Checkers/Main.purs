@@ -83,8 +83,8 @@ hasPiece squares coordinate =
   hasPlayerPiece squares playerOne coordinate ||
   hasPlayerPiece squares playerTwo coordinate
 
-isJumpMove :: Coordinate -> Coordinate -> Maybe Coordinate
-isJumpMove (Tuple x1 y1) (Tuple x2 y2) =
+shouldJump :: Coordinate -> Coordinate -> Maybe Coordinate
+shouldJump (Tuple x1 y1) (Tuple x2 y2) =
   if abs (toNumber (y1 - y2)) == 2.0
   then
     let n1 = floor (max (toNumber x1) (toNumber x2) - 1.0)
@@ -133,25 +133,36 @@ getHighlightCoordinate state pixel =
           then Just to
           else getActiveCoordinate state.grid state.currentPlayer pixel
 
+isRegularMove :: Player -> Coordinate -> Coordinate -> Boolean
+isRegularMove (Player 1) from to =
+  let d1 = from + Tuple   1    1
+      d2 = from + Tuple (-1)   1
+  in d1 == to || d2 == to
+isRegularMove _ from to =
+  let d3 = from + Tuple   1  (-1)
+      d4 = from + Tuple (-1) (-1)
+  in d3 == to || d4 == to
+
+isJumpMove :: Grid -> Player -> Coordinate -> Coordinate -> Boolean
+isJumpMove grid (Player 1) from to =
+  let d1 = from + Tuple   1    1
+      d2 = from + Tuple (-1)   1
+      d5 = from + Tuple   2    2
+      d6 = from + Tuple (-2)   2
+      f = hasPlayerPiece grid.squares playerTwo
+  in d5 == to && f d1 || d6 == to && f d2
+isJumpMove grid _ from to =
+  let d3 = from + Tuple   1  (-1)
+      d4 = from + Tuple (-1) (-1)
+      d7 = from + Tuple   2  (-2)
+      d8 = from + Tuple (-2) (-2)
+      f = hasPlayerPiece grid.squares playerOne
+  in d7 == to && f d3 || d8 == to && f d4
+
 isValidMove :: Grid -> Player -> Coordinate -> Coordinate -> Boolean
 isValidMove grid player from to =
-  isValid grid to && not hasPiece grid.squares to && check player to
-  where
-    check :: Player -> Coordinate -> Boolean
-    check (Player 1) to =
-      let d1 = from + Tuple   1    1
-          d2 = from + Tuple (-1)   1
-          d5 = from + Tuple   2    2
-          d6 = from + Tuple (-2)   2
-          f = hasPlayerPiece grid.squares playerTwo
-      in ((d1 == to) || (d2 == to) || (d5 == to && f d1) || (d6 == to && f d2))
-    check _ to =
-      let d3 = from + Tuple   1  (-1)
-          d4 = from + Tuple (-1) (-1)
-          d7 = from + Tuple   2  (-2)
-          d8 = from + Tuple (-2) (-2)
-          f = hasPlayerPiece grid.squares playerOne
-      in ((d3 == to) || (d4 == to) || (d7 == to && f d3) || (d8 == to && f d4))
+  isValid grid to && not hasPiece grid.squares to &&
+  (isRegularMove player from to || isJumpMove grid player from to)
 
 getMoves :: Grid -> Player -> Coordinate -> Array Coordinate
 getMoves grid player coordinate = do
@@ -174,7 +185,7 @@ movePiece from to grid =
   let fromIndex = fromJust (findIndex (hasCoordinate from) grid.squares)
       originalSquare = fromJust (grid.squares !! fromIndex)
   in
-    case isJumpMove from to of
+    case shouldJump from to of
       Nothing -> removePiece from (alterPiece originalSquare.piece to grid)
       Just middle -> removePiece middle (removePiece from (alterPiece originalSquare.piece to grid))
 
