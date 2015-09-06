@@ -16,7 +16,7 @@ import Data.Maybe.Unsafe
 import Data.Tuple
 import DOM
 import Graphics.Canvas
-import Math (pi)
+import Math (abs, max, pi)
 import Prelude
 
 import Checkers.Constants
@@ -82,6 +82,15 @@ hasPiece :: Array Square -> Coordinate -> Boolean
 hasPiece squares coordinate =
   hasPlayerPiece squares coordinate playerOne ||
   hasPlayerPiece squares coordinate playerTwo
+
+isJumpMove :: Coordinate -> Coordinate -> Maybe Coordinate
+isJumpMove (Tuple x1 y1) (Tuple x2 y2) =
+  if abs (toNumber (y1 - y2)) == 2.0
+  then
+    let n1 = floor (max (toNumber x1) (toNumber x2) - 1.0)
+        n2 = floor (max (toNumber y1) (toNumber y2) - 1.0)
+    in Just (Tuple n1 n2)
+  else Nothing
 
 getDiagonalSquares :: Coordinate -> Array Coordinate
 getDiagonalSquares (Tuple x y) = do
@@ -159,10 +168,13 @@ removePiece :: Coordinate -> Grid -> Grid
 removePiece = alterPiece Nothing
 
 movePiece :: Coordinate -> Coordinate -> Grid -> Grid
-movePiece from to grid = removePiece from (alterPiece originalSquare.piece to grid)
-    where
-      fromIndex = fromJust (findIndex (hasCoordinate from) grid.squares)
+movePiece from to grid =
+  let fromIndex = fromJust (findIndex (hasCoordinate from) grid.squares)
       originalSquare = fromJust (grid.squares !! fromIndex)
+  in
+    case isJumpMove from to of
+      Nothing -> removePiece from (alterPiece originalSquare.piece to grid)
+      Just middle -> removePiece middle (removePiece from (alterPiece originalSquare.piece to grid))
 
 otherPlayer :: Player -> Player
 otherPlayer (Player 1) = Player 2
