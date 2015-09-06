@@ -149,16 +149,19 @@ isJumpMove grid _ from to =
   in d7 == to && f d3 || d8 == to && f d4
 
 isValidMove :: Grid -> Player -> Coordinate -> Coordinate -> Boolean
-isValidMove grid player from to =
-  isValid grid to && not hasPiece grid.squares to &&
-  (isRegularMove player from to || isJumpMove grid player from to)
+isValidMove grid player from to = isJust (elemIndex to (getMoves grid player from))
 
 getMoves :: Grid -> Player -> Coordinate -> Array Coordinate
 getMoves grid player coordinate = do
-  guard $ hasPlayerPiece grid.squares player coordinate
-  potential <- getDiagonalSquares coordinate
-  guard $ isValidMove grid player coordinate potential
-  return potential
+    guard $ hasPlayerPiece grid.squares player coordinate
+    potential <- getDiagonalSquares coordinate
+    guard $ isValidMove' grid player coordinate potential
+    return potential
+  where
+    isValidMove' :: Grid -> Player -> Coordinate -> Coordinate -> Boolean
+    isValidMove' grid player from to =
+      isValid grid to && not hasPiece grid.squares to &&
+      (isRegularMove player from to || isJumpMove grid player from to)
 
 alterPiece :: Maybe Piece -> Coordinate -> Grid -> Grid
 alterPiece piece coordinate grid = grid { squares = newSquares }
