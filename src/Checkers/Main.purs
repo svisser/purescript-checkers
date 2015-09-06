@@ -83,15 +83,6 @@ hasPiece squares coordinate =
   hasPlayerPiece squares playerOne coordinate ||
   hasPlayerPiece squares playerTwo coordinate
 
-shouldJump :: Coordinate -> Coordinate -> Maybe Coordinate
-shouldJump (Tuple x1 y1) (Tuple x2 y2) =
-  if abs (toNumber (y1 - y2)) == 2.0
-  then
-    let n1 = floor (max (toNumber x1) (toNumber x2) - 1.0)
-        n2 = floor (max (toNumber y1) (toNumber y2) - 1.0)
-    in Just (Tuple n1 n2)
-  else Nothing
-
 getDiagonalSquares :: Coordinate -> Array Coordinate
 getDiagonalSquares (Tuple x y) = do
   i <- -2 : (-1 : (1 : (singleton 2)))
@@ -184,8 +175,17 @@ movePiece :: Coordinate -> Coordinate -> Grid -> Grid
 movePiece from to grid =
   let fromIndex = fromJust (findIndex (hasCoordinate from) grid.squares)
       originalSquare = fromJust (grid.squares !! fromIndex)
+
+      getMiddle :: Coordinate -> Coordinate -> Maybe Coordinate
+      getMiddle (Tuple x1 y1) (Tuple x2 y2) =
+        if abs (toNumber (y1 - y2)) == 2.0
+        then
+          let n1 = floor (max (toNumber x1) (toNumber x2) - 1.0)
+              n2 = floor (max (toNumber y1) (toNumber y2) - 1.0)
+          in Just (Tuple n1 n2)
+        else Nothing
   in
-    case shouldJump from to of
+    case getMiddle from to of
       Nothing -> removePiece from (alterPiece originalSquare.piece to grid)
       Just middle -> removePiece middle (removePiece from (alterPiece originalSquare.piece to grid))
 
