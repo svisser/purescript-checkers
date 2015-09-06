@@ -85,9 +85,10 @@ hasPiece squares coordinate =
 
 getDiagonalSquares :: Coordinate -> Array Coordinate
 getDiagonalSquares (Tuple x y) = do
-  i <- -2 : (-1 : (1 : (singleton 2)))
-  j <- -2 : (-1 : (1 : (singleton 2)))
-  return (Tuple (x + i) (y + j))
+  i <- -1 : (singleton 1)
+  j <- -1 : (singleton 1)
+  offset <- 1 : (singleton 2)
+  return (Tuple (x + i * offset) (y + j * offset))
 
 isOnSquare :: Pixel -> Square -> Boolean
 isOnSquare (Tuple x y) square =
