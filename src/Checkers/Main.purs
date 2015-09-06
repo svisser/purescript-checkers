@@ -106,15 +106,15 @@ getActiveCoordinate grid player pixel =
     Just index -> _.coordinate <$> grid.squares !! index
     Nothing    -> Nothing
 
-find :: Grid -> Player -> Pixel -> Maybe Coordinate
-find grid player pixel =
+findCoordinate :: Grid -> Player -> Pixel -> Maybe Coordinate
+findCoordinate grid player pixel =
   case findIndex (isOnSquare pixel) grid.squares of
     Just index -> _.coordinate <$> grid.squares !! index
     Nothing    -> Nothing
 
 getHighlightCoordinate :: State -> Pixel -> Maybe Coordinate
 getHighlightCoordinate state pixel =
-  case find state.grid state.currentPlayer pixel of
+  case findCoordinate state.grid state.currentPlayer pixel of
     Nothing -> Nothing
     Just to -> do
       case state.selectedCoordinate of
