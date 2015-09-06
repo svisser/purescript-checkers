@@ -306,7 +306,8 @@ clickListener st e = do
                   renderPage st
                   return unit
                 true -> do
-                  writeSTRef st $ state { selectedCoordinate = Nothing,
+                  writeSTRef st $ state { highlightedCoordinate = Nothing,
+                                          selectedCoordinate = Nothing,
                                           grid = movePiece from to state.grid,
                                           currentPlayer = otherPlayer state.currentPlayer }
                   renderPage st
