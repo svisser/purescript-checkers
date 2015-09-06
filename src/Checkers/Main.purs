@@ -141,14 +141,17 @@ getMoves grid player coordinate = do
   guard $ isValidMove grid player coordinate potential
   return potential
 
+alterPiece :: Maybe Piece -> Coordinate -> Grid -> Grid
+alterPiece piece coordinate grid = grid { squares = newSquares }
+  where
+    index = fromJust (findIndex (hasCoordinate coordinate) grid.squares)
+    newSquares = fromJust (modifyAt index (setPiece piece) grid.squares)
+
 movePiece :: Coordinate -> Coordinate -> Grid -> Grid
-movePiece from to grid = grid { squares = newSquares }
+movePiece from to grid = alterPiece Nothing from (alterPiece originalSquare.piece to grid)
     where
       fromIndex = fromJust (findIndex (hasCoordinate from) grid.squares)
-      toIndex = fromJust (findIndex (hasCoordinate to) grid.squares)
       originalSquare = fromJust (grid.squares !! fromIndex)
-      afterMove = fromJust (modifyAt toIndex (setPiece originalSquare.piece) grid.squares)
-      newSquares = fromJust (modifyAt fromIndex (setPiece Nothing) afterMove)
 
 switchPlayer :: Player -> Player
 switchPlayer (Player 1) = Player 2
