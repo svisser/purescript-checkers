@@ -75,14 +75,14 @@ getSquare :: Array Square -> Coordinate -> Maybe Square
 getSquare squares coordinate =
   fromMaybe Nothing $ (squares !!) <$> findSquare squares coordinate
 
-squareHasPiece :: Square -> Player -> Boolean
-squareHasPiece square player = fromMaybe false $ (hasPlayer player) <$> square.piece
+squareHasPiece :: Player -> Square -> Boolean
+squareHasPiece player square = fromMaybe false $ (hasPlayer player) <$> square.piece
 
 hasPlayerPiece :: Array Square -> Player -> Coordinate -> Boolean
 hasPlayerPiece squares player coordinate =
   case getSquare squares coordinate of
     Nothing -> false
-    Just square -> squareHasPiece square player
+    Just square -> squareHasPiece player square
 
 hasPiece :: Array Square -> Coordinate -> Boolean
 hasPiece squares coordinate =
