@@ -72,16 +72,16 @@ getSquare :: Array Square -> Coordinate -> Maybe Square
 getSquare squares coordinate =
   fromMaybe Nothing $ (squares !!) <$> (findIndex (hasCoordinate coordinate) squares)
 
-hasPlayerPiece :: Array Square -> Coordinate -> Player -> Boolean
-hasPlayerPiece squares coordinate player =
+hasPlayerPiece :: Array Square -> Player -> Coordinate -> Boolean
+hasPlayerPiece squares player coordinate =
   case getSquare squares coordinate of
     Nothing -> false
     Just square -> fromMaybe false $ (hasPlayer player) <$> square.piece
 
 hasPiece :: Array Square -> Coordinate -> Boolean
 hasPiece squares coordinate =
-  hasPlayerPiece squares coordinate playerOne ||
-  hasPlayerPiece squares coordinate playerTwo
+  hasPlayerPiece squares playerOne coordinate ||
+  hasPlayerPiece squares playerTwo coordinate
 
 isJumpMove :: Coordinate -> Coordinate -> Maybe Coordinate
 isJumpMove (Tuple x1 y1) (Tuple x2 y2) =
@@ -135,25 +135,27 @@ getHighlightCoordinate state pixel =
 
 isValidMove :: Grid -> Player -> Coordinate -> Coordinate -> Boolean
 isValidMove grid player from to =
-  let d1 = from + Tuple   1    1
-      d2 = from + Tuple (-1)   1
-      d3 = from + Tuple   1  (-1)
-      d4 = from + Tuple (-1) (-1)
-      d5 = from + Tuple   2    2
-      d6 = from + Tuple (-2)   2
-      d7 = from + Tuple   2  (-2)
-      d8 = from + Tuple (-2) (-2)
-      p1 = player == playerOne && ((d1 == to) || (d2 == to) ||
-                                   (d5 == to && hasPlayerPiece grid.squares d1 playerTwo) ||
-                                   (d6 == to && hasPlayerPiece grid.squares d2 playerTwo))
-      p2 = player == playerTwo && ((d3 == to) || (d4 == to) ||
-                                   (d7 == to && hasPlayerPiece grid.squares d3 playerOne) ||
-                                   (d8 == to && hasPlayerPiece grid.squares d4 playerOne))
-  in isValid grid to && not hasPiece grid.squares to && (p1 || p2)
+  isValid grid to && not hasPiece grid.squares to && check player to
+  where
+    check :: Player -> Coordinate -> Boolean
+    check (Player 1) to =
+      let d1 = from + Tuple   1    1
+          d2 = from + Tuple (-1)   1
+          d5 = from + Tuple   2    2
+          d6 = from + Tuple (-2)   2
+          f = hasPlayerPiece grid.squares playerTwo
+      in ((d1 == to) || (d2 == to) || (d5 == to && f d1) || (d6 == to && f d2))
+    check _ to =
+      let d3 = from + Tuple   1  (-1)
+          d4 = from + Tuple (-1) (-1)
+          d7 = from + Tuple   2  (-2)
+          d8 = from + Tuple (-2) (-2)
+          f = hasPlayerPiece grid.squares playerOne
+      in ((d3 == to) || (d4 == to) || (d7 == to && f d3) || (d8 == to && f d4))
 
 getMoves :: Grid -> Player -> Coordinate -> Array Coordinate
 getMoves grid player coordinate = do
-  guard $ hasPlayerPiece grid.squares coordinate player
+  guard $ hasPlayerPiece grid.squares player coordinate
   potential <- getDiagonalSquares coordinate
   guard $ isValidMove grid player coordinate potential
   return potential
