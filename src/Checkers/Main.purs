@@ -253,6 +253,20 @@ renderHighlight ctx squares selection = do
       strokePath ctx $ arc ctx arcPiece
       return unit
 
+renderCurrentPlayer :: forall e.
+                        State ->
+                        Eff (dom :: DOM | e) Unit
+renderCurrentPlayer state = do
+  doc <- document globalWindow
+  playerIndicator <- getElementById "player" doc
+  case playerIndicator of
+    Just indicator -> do
+      setInnerHTML (if state.currentPlayer == playerOne
+                    then colorPlayerOne
+                    else colorPlayerTwo) indicator
+      return unit
+    _ -> return unit
+
 render :: forall s e.
             Context2D ->
             STRef s State ->
@@ -269,6 +283,7 @@ render ctx st = do
     renderHighlight ctx state.grid.squares state.selectedCoordinate
   withContext ctx $ do
     renderHighlight ctx state.grid.squares state.highlightedCoordinate
+  renderCurrentPlayer state
   return unit
 
 renderPage :: forall s e.
