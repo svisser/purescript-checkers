@@ -101,21 +101,18 @@ isOnActiveSquare grid player pixel square =
   let moves = getMoves grid player square.coordinate
   in isOnSquare pixel square && not (null moves)
 
-getActiveCoordinate :: Grid -> Player -> Pixel -> Maybe Coordinate
-getActiveCoordinate grid player pixel =
-  case findIndex (isOnActiveSquare grid player pixel) grid.squares of
+searchGrid :: Grid -> (Square -> Boolean) -> Maybe Coordinate
+searchGrid grid predicate =
+  case findIndex predicate grid.squares of
     Just index -> _.coordinate <$> grid.squares !! index
     Nothing    -> Nothing
 
-findCoordinate :: Grid -> Player -> Pixel -> Maybe Coordinate
-findCoordinate grid player pixel =
-  case findIndex (isOnSquare pixel) grid.squares of
-    Just index -> _.coordinate <$> grid.squares !! index
-    Nothing    -> Nothing
+getActiveCoordinate :: Grid -> Player -> Pixel -> Maybe Coordinate
+getActiveCoordinate grid player pixel = searchGrid grid (isOnActiveSquare grid player pixel)
 
 getHighlightCoordinate :: State -> Pixel -> Maybe Coordinate
 getHighlightCoordinate state pixel =
-  case findCoordinate state.grid state.currentPlayer pixel of
+  case searchGrid state.grid (isOnSquare pixel) of
     Nothing -> Nothing
     Just to -> do
       case state.selectedCoordinate of
