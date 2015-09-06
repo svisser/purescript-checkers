@@ -147,8 +147,11 @@ alterPiece piece coordinate grid = grid { squares = newSquares }
     index = fromJust (findIndex (hasCoordinate coordinate) grid.squares)
     newSquares = fromJust (modifyAt index (setPiece piece) grid.squares)
 
+removePiece :: Coordinate -> Grid -> Grid
+removePiece = alterPiece Nothing
+
 movePiece :: Coordinate -> Coordinate -> Grid -> Grid
-movePiece from to grid = alterPiece Nothing from (alterPiece originalSquare.piece to grid)
+movePiece from to grid = removePiece from (alterPiece originalSquare.piece to grid)
     where
       fromIndex = fromJust (findIndex (hasCoordinate from) grid.squares)
       originalSquare = fromJust (grid.squares !! fromIndex)
