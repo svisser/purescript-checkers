@@ -68,9 +68,12 @@ hasPlayer player piece = piece.player == player
 hasCoordinate :: Coordinate -> Square -> Boolean
 hasCoordinate coordinate square = coordinate == square.coordinate
 
+findSquare :: Array Square -> Coordinate -> Maybe Int
+findSquare squares coordinate = findIndex (hasCoordinate coordinate) squares
+
 getSquare :: Array Square -> Coordinate -> Maybe Square
 getSquare squares coordinate =
-  fromMaybe Nothing $ (squares !!) <$> (findIndex (hasCoordinate coordinate) squares)
+  fromMaybe Nothing $ (squares !!) <$> findSquare squares coordinate
 
 squareHasPiece :: Square -> Player -> Boolean
 squareHasPiece square player = fromMaybe false $ (hasPlayer player) <$> square.piece
@@ -169,7 +172,7 @@ getMoves grid player coordinate = do
 alterPiece :: Maybe Piece -> Coordinate -> Grid -> Grid
 alterPiece piece coordinate grid = grid { squares = newSquares }
   where
-    index = fromJust (findIndex (hasCoordinate coordinate) grid.squares)
+    index = fromJust (findSquare grid.squares coordinate)
     newSquares = fromJust (modifyAt index (setPiece piece) grid.squares)
 
 removePiece :: Coordinate -> Grid -> Grid
@@ -177,7 +180,7 @@ removePiece = alterPiece Nothing
 
 movePiece :: Coordinate -> Coordinate -> Grid -> Grid
 movePiece from to grid =
-  let fromIndex = fromJust (findIndex (hasCoordinate from) grid.squares)
+  let fromIndex = fromJust (findSquare grid.squares from)
       originalSquare = fromJust (grid.squares !! fromIndex)
 
       getMiddle :: Coordinate -> Coordinate -> Maybe Coordinate
