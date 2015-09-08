@@ -76,18 +76,15 @@ getSquare squares coordinate =
   fromMaybe Nothing $ (squares !!) <$> findSquare squares coordinate
 
 squareHasPiece :: Player -> Square -> Boolean
-squareHasPiece player square = fromMaybe false $ (hasPlayer player) <$> square.piece
+squareHasPiece player square = fromMaybe false $ hasPlayer player <$> square.piece
 
-hasPlayerPiece :: Array Square -> Player -> Coordinate -> Boolean
-hasPlayerPiece squares player coordinate =
-  case getSquare squares coordinate of
-    Nothing -> false
-    Just square -> squareHasPiece player square
+hasPlayerPiece :: Player -> Array Square -> Coordinate -> Boolean
+hasPlayerPiece player = fromMaybe false $ squareHasPiece player <$> getSquare
 
 hasPiece :: Array Square -> Coordinate -> Boolean
 hasPiece squares coordinate =
-  hasPlayerPiece squares playerOne coordinate ||
-  hasPlayerPiece squares playerTwo coordinate
+  hasPlayerPiece playerOne squares coordinate ||
+  hasPlayerPiece playerTwo squares coordinate
 
 getDiagonalSquares :: Coordinate -> Array Coordinate
 getDiagonalSquares (Tuple x y) = do
@@ -144,14 +141,14 @@ isJumpMove grid (Player 1) from to =
       d2 = from + Tuple (-1)   1
       d5 = from + Tuple   2    2
       d6 = from + Tuple (-2)   2
-      f = hasPlayerPiece grid.squares playerTwo
+      f = hasPlayerPiece playerTwo grid.squares
   in d5 == to && f d1 || d6 == to && f d2
 isJumpMove grid _ from to =
   let d3 = from + Tuple   1  (-1)
       d4 = from + Tuple (-1) (-1)
       d7 = from + Tuple   2  (-2)
       d8 = from + Tuple (-2) (-2)
-      f = hasPlayerPiece grid.squares playerOne
+      f = hasPlayerPiece playerOne grid.squares
   in d7 == to && f d3 || d8 == to && f d4
 
 isValidMove :: Grid -> Player -> Coordinate -> Coordinate -> Boolean
@@ -165,7 +162,7 @@ getMoves grid player coordinate =
     allJumpMoves = getMoves' isJumpMove
 
     getMoves' validator = do
-      guard $ hasPlayerPiece grid.squares player coordinate
+      guard $ hasPlayerPiece player grid.squares coordinate
       potential <- getDiagonalSquares coordinate
       guard $ (isValid grid potential &&
                not hasPiece grid.squares potential &&
