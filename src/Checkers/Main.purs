@@ -79,7 +79,8 @@ squareHasPiece :: Player -> Square -> Boolean
 squareHasPiece player square = fromMaybe false $ hasPlayer player <$> square.piece
 
 hasPlayerPiece :: Player -> Array Square -> Coordinate -> Boolean
-hasPlayerPiece player = fromMaybe false $ squareHasPiece player <$> getSquare
+hasPlayerPiece player squares coordinate =
+  fromMaybe false $ squareHasPiece player <$> getSquare squares coordinate
 
 hasPiece :: Array Square -> Coordinate -> Boolean
 hasPiece squares coordinate =
