@@ -187,14 +187,14 @@ movePiece from to grid =
       getMiddle (Tuple x1 y1) (Tuple x2 y2) =
         if abs (toNumber (y1 - y2)) == 2.0
         then
-          let n1 = floor (max (toNumber x1) (toNumber x2) - 1.0)
-              n2 = floor (max (toNumber y1) (toNumber y2) - 1.0)
-          in Just (Tuple n1 n2)
+          let f v w = floor (max (toNumber v) (toNumber w) - 1.0)
+          in Just (Tuple (f x1 x2) (f y1 y2))
         else Nothing
+      gridAfterMove = removePiece from $ alterPiece originalSquare.piece to grid
   in
     case getMiddle from to of
-      Nothing -> removePiece from (alterPiece originalSquare.piece to grid)
-      Just middle -> removePiece middle (removePiece from (alterPiece originalSquare.piece to grid))
+      Nothing -> gridAfterMove
+      Just middle -> removePiece middle gridAfterMove
 
 otherPlayer :: Player -> Player
 otherPlayer (Player 1) = Player 2
