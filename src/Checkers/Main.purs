@@ -128,12 +128,12 @@ getHighlightCoordinate state pixel =
           then Just to
           else getActiveCoordinate state.grid state.currentPlayer pixel
 
-isRegularMove :: Player -> Coordinate -> Coordinate -> Boolean
-isRegularMove (Player 1) from to =
+isRegularMove :: Grid -> Player -> Coordinate -> Coordinate -> Boolean
+isRegularMove _ (Player 1) from to =
   let d1 = from + Tuple   1    1
       d2 = from + Tuple (-1)   1
   in d1 == to || d2 == to
-isRegularMove _ from to =
+isRegularMove _ _ from to =
   let d3 = from + Tuple   1  (-1)
       d4 = from + Tuple (-1) (-1)
   in d3 == to || d4 == to
@@ -158,16 +158,19 @@ isValidMove :: Grid -> Player -> Coordinate -> Coordinate -> Boolean
 isValidMove grid player from to = isJust (elemIndex to (getMoves grid player from))
 
 getMoves :: Grid -> Player -> Coordinate -> Array Coordinate
-getMoves grid player coordinate = do
-    guard $ hasPlayerPiece grid.squares player coordinate
-    potential <- getDiagonalSquares coordinate
-    guard $ isValidMove' grid player coordinate potential
-    return potential
+getMoves grid player coordinate =
+  if null allJumpMoves then allRegularMoves else allJumpMoves
   where
-    isValidMove' :: Grid -> Player -> Coordinate -> Coordinate -> Boolean
-    isValidMove' grid player from to =
-      isValid grid to && not hasPiece grid.squares to &&
-      (isRegularMove player from to || isJumpMove grid player from to)
+    allRegularMoves = getMoves' isRegularMove
+    allJumpMoves = getMoves' isJumpMove
+
+    getMoves' validator = do
+      guard $ hasPlayerPiece grid.squares player coordinate
+      potential <- getDiagonalSquares coordinate
+      guard $ (isValid grid potential &&
+               not hasPiece grid.squares potential &&
+               validator grid player coordinate potential)
+      return potential
 
 alterPiece :: Maybe Piece -> Coordinate -> Grid -> Grid
 alterPiece piece coordinate grid = grid { squares = newSquares }
