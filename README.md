@@ -10,7 +10,11 @@ Install npm:
 
 Install PureScript:
 
-* `npm install -g purescript`
+* `npm install -g purescript@0.8.5`
+
+Install pulp:
+
+* `npm install -g pulp@8.2.1`
 
 Install bower:
 
