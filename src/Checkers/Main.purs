@@ -1,26 +1,34 @@
 module Checkers.Main where
 
 import Control.Monad.Eff
-import Control.Monad.ST
-import Control.MonadPlus
-import Data.Array
-import Data.DOM.Simple.Document
-import Data.DOM.Simple.Element
-import Data.DOM.Simple.Events
-import Data.DOM.Simple.Types
-import Data.DOM.Simple.Unsafe.Events
-import Data.DOM.Simple.Window
-import Data.Int
-import Data.Maybe
-import Data.Maybe.Unsafe
-import Data.Tuple
-import DOM
-import Graphics.Canvas
+import Control.Monad.ST (ST, STRef, newSTRef, writeSTRef, readSTRef)
+import Control.MonadPlus (guard)
+import Data.Array (foldM, (!!), modifyAt, null, elemIndex, findIndex, singleton, (:), (..))
+import Data.DOM.Simple.Element (offsetTop, offsetLeft, getElementById, setInnerHTML)
+import Data.DOM.Simple.Events (MouseEventType(MouseClickEvent, MouseMoveEvent), addMouseEventListener)
+import Data.DOM.Simple.Types (DOMEvent)
+import Data.DOM.Simple.Unsafe.Events (unsafeEventNumberProp)
+import Data.DOM.Simple.Window (globalWindow, document)
+import Data.Int (toNumber, floor, odd, even)
+import Data.Maybe (Maybe(Just, Nothing), isJust, fromMaybe)
+import Data.Maybe.Unsafe (fromJust)
+import Data.Tuple (Tuple(Tuple), snd, fst)
+import DOM (DOM)
+import Graphics.Canvas (Canvas, Context2D, getCanvasElementById, getContext2D,
+                        setCanvasDimensions, withContext, arc, strokePath,
+                        setLineWidth, strokeRect, setStrokeStyle,
+                        fillPath, setFillStyle, fillRect)
 import Math (abs, max, pi)
-import Prelude
+import Prelude (Unit, unit, return, bind, ($), (==), (*), (/), (+), (-),
+                not, (&&), (||), negate, (<$>), (<), (>=))
 
-import Checkers.Constants
-import Checkers.Types
+import Checkers.Constants (layerCount, defaultHeight, defaultWidth,
+                           renderDimension, colorPlayerTwo, colorPlayerOne,
+                           playerOne, highlightWidth, renderSize,
+                           colorBorder, playerTwo,
+                           colorSquareTwo, colorSquareOne)
+import Checkers.Types (State, Coordinate, Square, Grid,
+                       Piece, Pixel, Player(Player))
 
 createPiece :: Player -> Piece
 createPiece player =
