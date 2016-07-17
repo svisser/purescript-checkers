@@ -5,3 +5,4 @@ node_modules/
 output/
 html/checkers.js
 npm-debug.log
+.psc-ide-port
